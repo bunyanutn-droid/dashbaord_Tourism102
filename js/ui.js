@@ -8,7 +8,7 @@
   const cssv = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
   TD.colors = () => ({
     ink: cssv("--ink"), muted: cssv("--muted"), line: cssv("--line"), card: cssv("--card"),
-    thai: cssv("--thai"), foreign: cssv("--foreign"), teal: cssv("--teal"), eco: cssv("--eco"), cost: cssv("--cost"), con: cssv("--con"),
+    thai: cssv("--thai"), foreign: cssv("--foreign"), teal: cssv("--teal"), eco: cssv("--blue"), cost: cssv("--amber"), con: cssv("--violet"), main: cssv("--main"), second: cssv("--second"),
   });
 
   /* ---- source lines (one per chart: source, URL, period, unit) ---- */
@@ -16,7 +16,6 @@
   TD.SRC = {
     tour: () => `<b>ที่มา</b> กระทรวงการท่องเที่ยวและกีฬา (สำนักงานปลัดกระทรวง) · ${L("https://data.go.th/dataset/trend_domestic_tourists", "data.go.th/dataset/trend_domestic_tourists")} · ม.ค. 2015–ก.ค. 2023 · หน่วย: คน (นับรายจังหวัด)`,
     gpp: () => `<b>ที่มา</b> สศช. (NESDC) ผลิตภัณฑ์ภาคและจังหวัด แบบปริมาณลูกโซ่ (ปีอ้างอิง 2545) ผ่านตาราง 10.15 ${L("https://www.nso.go.th/public/e-book/Statistical-Yearbook/SYB-2025_webPage/File%20SYB/2025/10/T%2010.15%202025.pdf", "หนังสือสถิติรายปีประเทศไทย 2568 (สสช.)")} · ปี 2021 (r) และ 2022 · หน่วย: ล้านบาท / บาทต่อคน`,
-    cpi: () => `<b>ที่มา</b> กระทรวงพาณิชย์ (สำนักงานนโยบายและยุทธศาสตร์การค้า) API ${L("https://data.moc.go.th/OpenData/CPIPIndexes", "data.moc.go.th/OpenData/CPIPIndexes")} · ดัชนีฐานปี 2562 = 100 · ม.ค. 2015–ก.ค. 2023 (เฉพาะจังหวัดที่ API ส่งข้อมูลได้)`,
     acc: () => `<b>ที่มา</b> การท่องเที่ยวแห่งประเทศไทย (ททท.) ${L("https://datacatalog.tat.or.th/dataset/accommodation", "datacatalog.tat.or.th/dataset/accommodation")} · ภาพรวม ณ วันที่ดึงข้อมูล 17 ต.ค. 2026 (snapshot) · หน่วย: แห่ง / ห้อง`,
     geo: () => `<b>ขอบเขตจังหวัด</b> ${L("https://github.com/chingchai/OpenGISData-Thailand", "OpenGISData-Thailand")} (CC BY 4.0, อ้างอิงกรมการปกครอง)`,
   };

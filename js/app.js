@@ -2,7 +2,7 @@
 (function () {
   const TD = window.TD;
   const $ = (id) => document.getElementById(id);
-  const PAGES = ["overview", "economy", "cost", "concentration", "sources"];
+  const PAGES = ["overview", "economy", "concentration", "sources"];
 
   function fail(title, detail) {
     $("state-loading").hidden = true;
@@ -34,7 +34,7 @@
     if (s.prov !== "all") parts.push("จังหวัด" + TD.byCode[+s.prov].th);
     $("filter-note").textContent = `กำลังแสดง ${nb} จังหวัดตามตัวกรอง${parts.length ? " (" + parts.join(" · ") + ")" : ""}` +
       (s.prov !== "all" ? " · ตัวกรองจังหวัดมีผลกับ KPI สัดส่วน และแนวโน้มของหน้าภาพรวม ส่วนแผนที่/อันดับ/กราฟเปรียบเทียบยังแสดงทุกจังหวัดตามภูมิภาคและประเภทเมือง โดยเน้นสีจังหวัดที่เลือก" : "") +
-      (s.page === "cost" ? " · หน้าค่าครองชีพไม่มีข้อมูลกรุงเทพมหานคร" : "");
+      "";
   }
 
   TD.setFilter = function (patch) { Object.assign(TD.state, patch); TD.render(); };
@@ -63,7 +63,7 @@
     window.scrollTo({ top: 0 });
   }
 
-  /* Python back-end (server.py) is optional: when present, data and saved uploads come from /api/*,
+  /* Python back-end (server.py) is optional: when present, the dataset comes from /api/dataset,
      otherwise the embedded data/*.js files are used. */
   async function fromBackend() {
     TD.backend = false;
@@ -73,10 +73,6 @@
       if (!h.ok) return;
       const r = await fetch("/api/dataset", { cache: "no-store" });
       if (r.ok) { window.DASH_DATA = await r.json(); TD.backend = true; }
-      for (const k of ["airport", "budget"]) {
-        const u = await fetch("/api/upload/" + k, { cache: "no-store" });
-        if (u.ok) { const j = await u.json(); if (j && j.rows) TD.extra[k] = j; }
-      }
     } catch (e) { TD.backend = false; }
   }
 

@@ -61,23 +61,7 @@ for m in lines:
     seen += 1
 check("GPP: %d provinces identical to table 10.15 text" % seen, seen == 77 and not bad, str(bad))
 
-# 3. CPI: embedded series identical to the saved API responses
-cpi_dir = os.path.join(ROOT, "raw", "cpi")
-n = 0
-bad = []
-for f in sorted(os.listdir(cpi_dir)) if os.path.isdir(cpi_dir) else []:
-    code, idx = f[:-5].split("_")
-    data = json.load(open(os.path.join(cpi_dir, f), encoding="utf-8"))
-    if not data:
-        continue
-    e = ds["cpi"]["series"].get(code, {}).get(idx)
-    want = sorted([r["year"], r["month"], r["price_index"], r["yoy"]] for r in data)
-    if e != want:
-        bad.append(f)
-    n += 1
-check("CPI: %d saved API files identical to embedded series; base year 2019" % n, not bad and ds["cpi"]["baseYear"] == 2019, str(bad[:5]))
-
-# 4. no non-finite numbers anywhere
+# 3. no non-finite numbers anywhere
 txt = open(os.path.join(ROOT, "data", "dataset.json"), encoding="utf-8").read()
 check("no NaN/Infinity in dataset.json", not re.search(r"\bNaN\b|Infinity", txt))
 print("ALL CHECKS PASSED" if ok else "SOME CHECKS FAILED")

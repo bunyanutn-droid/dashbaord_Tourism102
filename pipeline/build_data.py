@@ -12,7 +12,6 @@ Nothing is imputed. A value that is missing in the source stays missing (null).
 Run:  python pipeline/build_data.py
 """
 import csv
-import glob
 import json
 import os
 import re
@@ -150,34 +149,7 @@ if unmatched:
 assert len(gpp) == 77, len(gpp)
 note("GPP: จับคู่ได้ %d/77 จังหวัด (NESDC ปริมาณลูกโซ่ ปีอ้างอิง 2545; 2564r 2565 2566p)" % len(gpp))
 
-# ---------------------------------------------------------------- 2d. CPI (MOC / TPSO open API, base 2019 = 100)
-INDEX_NAMES = {}
-for row in csv.reader(open(os.path.join(RAW, "cpi_index_codes.csv"), encoding="utf-8-sig")):
-    INDEX_NAMES[row[0]] = row[1]
-cpi = defaultdict(dict)
-cpi_bases = Counter()
-empty_files = []
-for fpath in sorted(glob.glob(os.path.join(RAW, "cpi", "*.json"))):
-    code, index_id = os.path.basename(fpath)[:-5].split("_")
-    code = int(code)
-    data = json.load(open(fpath, encoding="utf-8"))
-    if not data:
-        empty_files.append((code, index_id))
-        continue
-    series = []
-    for r in data:
-        if r["province_code"] != code:
-            sys.exit("province code mismatch in %s" % fpath)
-        cpi_bases[r["base_year"]] += 1
-        series.append([r["year"], r["month"], r["price_index"], r["yoy"]])
-    series.sort()
-    cpi[code][index_id] = series
-no_cpi = [by_code[c]["th"] for c in by_code if c not in cpi]
-if no_cpi:
-    note("CPI: API ไม่ส่งข้อมูลระดับจังหวัดของ %s (ได้ผลลัพธ์ว่าง)" % ", ".join(no_cpi))
-note("CPI: ฐานดัชนีที่พบ %s; จังหวัดที่มีข้อมูล %d/77" % (dict(cpi_bases), len(cpi)))
-
-# ---------------------------------------------------------------- 2e. accommodation snapshot (TAT data catalog)
+# ---------------------------------------------------------------- 2d. accommodation snapshot (TAT data catalog)
 accom = {}
 for row in csv.DictReader(open(os.path.join(RAW, "accommodation_by_province.csv"), encoding="utf-8-sig")):
     prov = by_name.get(norm(row["province"]))
@@ -187,7 +159,6 @@ for row in csv.DictReader(open(os.path.join(RAW, "accommodation_by_province.csv"
 note("ที่พัก: TAT Data Catalog ภาพรวม ณ วันดึงข้อมูล (snapshot) %d จังหวัด" % len(accom))
 
 # ---------------------------------------------------------------- 3. EXPORT
-INDEX_KEEP = {k: INDEX_NAMES[k] for k in sorted({i for c in cpi.values() for i in c})}
 dataset = {
     "generated": ACCESS_DATE,
     "provinces": provinces,
@@ -198,8 +169,6 @@ dataset = {
         "droppedDuplicates": [[y, m, n] for y, m, n in dropped_dups],
     },
     "gpp": {str(c): v for c, v in gpp.items()},
-    "cpi": {"baseYear": 2019, "indexNames": INDEX_KEEP,
-            "series": {str(c): v for c, v in cpi.items()}},
     "accommodation": {str(c): v for c, v in accom.items()},
     "quality": log,
 }

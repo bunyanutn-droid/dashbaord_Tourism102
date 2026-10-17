@@ -50,11 +50,13 @@
     const xs = pts.map((p) => p.x), ys = pts.map((p) => p[yKey]);
     const rho = TD.stats.spearman(xs, ys), rl = TD.stats.pearson(xs.map(TD.stats.log10), ys.map(TD.stats.log10));
     const topX = pts.slice().sort((a, b) => b.x - a.x)[0];
+    const hi = (k) => pts.slice().sort((a, b) => b[k] - a[k])[0], lo = (k) => pts.slice().sort((a, b) => a[k] - b[k])[0];
+    const gH = hi("gpp"), gL = lo("gpp"), pH = hi("pc"), pL = lo("pc");
     TD.kpis("eco-kpis", [
-      { l: "จังหวัดที่นำมาเปรียบเทียบ", v: pts.length + " จังหวัด", n: `ปี ${y} · เดือนที่ใช้: ${TD.monthsLabel(win)}`, cls: "eco" },
-      { l: "สหสัมพันธ์อันดับ (Spearman ρ)", v: TD.f.r(rho), n: `นักท่องเที่ยว${typeLbl} กับ ${yLbl.split(" (")[0]}`, cls: "eco" },
-      { l: "สหสัมพันธ์ log–log (Pearson r)", v: TD.f.r(rl), n: "ลดอิทธิพลค่าสุดโต่ง เช่น กทม.", cls: "eco" },
-      { l: "นักท่องเที่ยวสูงสุด", v: topX.name, n: `GPP อันดับ ${topX.rg} · GPP ต่อหัวอันดับ ${topX.rp} (จาก ${pts.length})`, cls: "eco" },
+      { l: `GPP สูงสุด ปี ${y}`, v: gH.name, n: `${TD.f.int(gH.gpp)} ล้านบาท · นักท่องเที่ยวอันดับ ${gH.rx}/${pts.length} · ${gH.city}`, cls: "eco" },
+      { l: "GPP ต่ำสุด", v: gL.name, n: `${TD.f.int(gL.gpp)} ล้านบาท · นักท่องเที่ยวอันดับ ${gL.rx}/${pts.length} · ${gL.city}`, cls: "eco" },
+      { l: "GPP ต่อหัวสูงสุด", v: pH.name, n: `${TD.f.int(pH.pc)} บาท/คน/ปี · นักท่องเที่ยวอันดับ ${pH.rx}/${pts.length}`, cls: "eco" },
+      { l: "GPP ต่อหัวต่ำสุด", v: pL.name, n: `${TD.f.int(pL.pc)} บาท/คน/ปี · นักท่องเที่ยวอันดับ ${pL.rx}/${pts.length}`, cls: "eco" },
     ]);
 
     /* ---- scatter ---- */
@@ -63,18 +65,23 @@
     pts.slice().sort((a, b) => b[yKey] - a[yKey]).slice(0, 4).forEach((p) => labelSet.add(p.i));
     const selI = f.prov !== "all" && TD.byCode[+f.prov] ? TD.byCode[+f.prov].idx : -1;
     if (selI >= 0) labelSet.add(selI);
-    const traces = Object.keys(QN).map((q) => {
-      const g = pts.filter((p) => p.q === q);
-      return {
-        type: "scatter", mode: "markers+text", name: QN[q], x: g.map((p) => p.x), y: g.map((p) => p[yKey]),
+    const SYM = { "เมืองหลัก": "star", "เมืองรอง": "circle" };
+    const traces = [];
+    Object.keys(QN).forEach((q) => ["เมืองหลัก", "เมืองรอง"].forEach((ct) => {
+      const g = pts.filter((p) => p.q === q && p.city === ct);
+      traces.push({
+        type: "scatter", mode: "markers+text", name: QN[q], legendgroup: q, showlegend: ct === "เมืองรอง", x: g.map((p) => p.x), y: g.map((p) => p[yKey]),
         text: g.map((p) => (labelSet.has(p.i) ? p.name : "")), textposition: "top center", textfont: { size: 10 },
         customdata: g.map((p) => [p.name, p.city, p.thai, p.foreign, p.gpp, p.pc, p.rx, p.i]),
-        marker: { color: QC[q], size: g.map((p) => (p.i === selI ? 17 : 10)), opacity: 0.85, line: { width: g.map((p) => (p.i === selI ? 3 : 1)), color: g.map((p) => (p.i === selI ? "#b45309" : "#ffffff")) } },
+        marker: { symbol: SYM[ct], color: QC[q], size: g.map((p) => (p.i === selI ? 19 : ct === "เมืองหลัก" ? 14 : 10)), opacity: 0.9, line: { width: g.map((p) => (p.i === selI ? 3 : 1)), color: g.map((p) => (p.i === selI ? "#b45309" : "#ffffff")) } },
         hovertemplate: "<b>%{customdata[0]}</b> (%{customdata[1]})<br>นักท่องเที่ยวรวม: %{x:,.0f} คน<br>ไทย %{customdata[2]:,.0f} · ต่างชาติ %{customdata[3]:,.0f}<br>GPP: %{customdata[4]:,.0f} ล้านบาท<br>GPP ต่อหัว: %{customdata[5]:,.0f} บาท/คน<br>อันดับนักท่องเที่ยว: %{customdata[6]}<extra></extra>",
-      };
-    });
+      });
+    }));
+    // legend-only entries that explain the symbols
+    traces.push({ type: "scatter", mode: "markers", name: "★ = เมืองหลัก", x: [null], y: [null], marker: { symbol: "star", color: "#64748b", size: 14 }, hoverinfo: "skip" });
+    traces.push({ type: "scatter", mode: "markers", name: "● = เมืองรอง", x: [null], y: [null], marker: { symbol: "circle", color: "#64748b", size: 10 }, hoverinfo: "skip" });
     // hover for foreign-only/thai-only: x shows chosen type; hovertemplate says "รวม" -> fix label
-    traces.forEach((t) => (t.hovertemplate = t.hovertemplate.replace("นักท่องเที่ยวรวม", "นักท่องเที่ยว" + typeLbl)));
+    traces.forEach((t) => { if (t.hovertemplate) t.hovertemplate = t.hovertemplate.replace("นักท่องเที่ยวรวม", "นักท่องเที่ยว" + typeLbl); });
     const axis = (title, v) => ({ title, type: S.scale === "log" ? "log" : "linear", tickformat: v });
     TD.plot("eco-scatter", traces, {
       xaxis: Object.assign(axis(`จำนวนนักท่องเที่ยว${typeLbl} (คน, ${TD.monthsLabel(win)} ${y})`, ",.2s"), { automargin: true }),
@@ -88,7 +95,7 @@
     const gd = $("eco-scatter");
     if (gd.removeAllListeners) gd.removeAllListeners("plotly_click");
     gd.on("plotly_click", (e) => { const cd = e.points[0].customdata; TD.setFilter({ prov: String(TD.P[cd[7]].code) }); });
-    $("eco-scatter-desc").innerHTML = `แกน X = จำนวนนักท่องเที่ยว${typeLbl} ปี ${y} · แกน Y = ${yLbl} ปี ${y} · เส้นประ = ค่ามัธยฐาน (X ${TD.f.int(mx)} คน, Y ${TD.f.int(my)}) · ชี้หรือคลิกจุดเพื่อดูจังหวัด (คลิกเพื่อกรอง) ${TD.badge.raw}${TD.badge.calc}`;
+    $("eco-scatter-desc").innerHTML = `แกน X = จำนวนนักท่องเที่ยว${typeLbl} ปี ${y} · แกน Y = ${yLbl} ปี ${y} · เส้นประ = ค่ามัธยฐาน (X ${TD.f.int(mx)} คน, Y ${TD.f.int(my)}) · <b>★ = เมืองหลัก · ● = เมืองรอง</b> · สี = กลุ่มตามมัธยฐาน · ชี้หรือคลิกจุดเพื่อดูจังหวัด (คลิกเพื่อกรอง) ${TD.badge.raw}${TD.badge.calc}`;
     $("eco-corr").innerHTML = TD.corrHTML(xs, ys, `<i>สหสัมพันธ์ไม่ใช่หลักฐานเชิงเหตุและผล</i>`);
     $("eco-scatter-src").innerHTML = TD.SRC.tour() + "<br>" + TD.SRC.gpp() + `<br>ช่วงเวลา: นักท่องเที่ยวปี ${y} เดือน ${TD.monthsLabel(win)}; GPP ปี ${y} ทั้งปี`;
 
@@ -109,9 +116,15 @@
 
     /* ---- quadrants ---- */
     $("eco-quad-desc").innerHTML = `เกณฑ์: นักท่องเที่ยวสูง = ≥ ${TD.f.int(mx)} คน, ${yLbl.split(" (")[0]}สูง = ≥ ${TD.f.int(my)} (ค่ามัธยฐานของ ${pts.length} จังหวัดที่แสดง) ${TD.badge.calc} — การแบ่งนี้เป็นวิธีจัดกลุ่มเชิงเปรียบเทียบ ไม่ใช่เกณฑ์ทางการ`;
+    const cnt = (q, ct) => pts.filter((p) => p.q === q && p.city === ct).length;
+    const order = ["q4", "q3", "q2", "q1"];
+    TD.plot("eco-quad-chart", [
+      { type: "bar", orientation: "h", name: "★ เมืองหลัก", y: order.map((q) => QN[q]), x: order.map((q) => cnt(q, "เมืองหลัก")), marker: { color: TD.colors().main }, text: order.map((q) => cnt(q, "เมืองหลัก") || ""), textposition: "inside", hovertemplate: "%{y}<br>เมืองหลัก %{x} จังหวัด<extra></extra>" },
+      { type: "bar", orientation: "h", name: "● เมืองรอง", y: order.map((q) => QN[q]), x: order.map((q) => cnt(q, "เมืองรอง")), marker: { color: TD.colors().second }, text: order.map((q) => cnt(q, "เมืองรอง") || ""), textposition: "inside", hovertemplate: "%{y}<br>เมืองรอง %{x} จังหวัด<extra></extra>" },
+    ], { barmode: "stack", xaxis: { title: "จำนวนจังหวัด" }, yaxis: { automargin: true }, margin: { l: 150, r: 10, t: 10, b: 60 }, legend: { orientation: "h", y: -0.3 } });
     $("eco-quad").innerHTML = ["q1", "q2", "q3", "q4"].map((q) => {
       const g = pts.filter((p) => p.q === q).sort((a, b) => b.x - a.x);
-      return `<div class="${q}"><h3>${QN[q]}</h3><div class="cnt">${g.length} จังหวัด</div><div class="names">${g.length ? g.map((p) => `${TD.esc(p.name)} <small>(#${p.rx})</small>`).join(" · ") : "—"}</div></div>`;
+      return `<details class="${q}"><summary>${QN[q]} — ${g.length} จังหวัด</summary><div class="names">${g.length ? g.map((p) => `${p.city === "เมืองหลัก" ? "★" : "●"} ${TD.esc(p.name)} <small>(#${p.rx})</small>`).join(" · ") : "—"}</div></details>`;
     }).join("");
 
     /* ---- automatic findings (all numbers come from the arrays above) ---- */

@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>แดชบอร์ดท่องเที่ยว เศรษฐกิจ และค่าครองชีพรายจังหวัด</title>
-<meta name="description" content="วิเคราะห์ความสัมพันธ์ของนักท่องเที่ยว GPP และ CPI ระดับจังหวัดของไทยจากข้อมูลทางการ">
+<meta name="color-scheme" content="light">
+<title>แดชบอร์ดท่องเที่ยวและเศรษฐกิจรายจังหวัด</title>
+<meta name="description" content="วิเคราะห์ความสัมพันธ์ของนักท่องเที่ยว รายได้ และ GPP ระดับจังหวัดของไทยจากข้อมูลทางการ">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap">
@@ -21,18 +22,17 @@
     <div style="background-image:url(assets/img/banner/temple.jpg)"></div>
   </div>
   <div class="hero-inner">
-    <p class="eyebrow">Thailand Tourism · Economy · Cost of Living</p>
-    <h1>แดชบอร์ดวิเคราะห์การท่องเที่ยว เศรษฐกิจ และค่าครองชีพรายจังหวัด</h1>
-    <p class="hero-sub">ใช้ข้อมูลทางการเท่านั้น · ไม่มีข้อมูลจำลอง · ทุกตัวเลขตรวจสอบย้อนกลับได้ที่หน้า “แหล่งข้อมูลและวิธีวิเคราะห์”</p>
+    <p class="eyebrow">Thailand Tourism · Income · Economy</p>
+    <h1>แดชบอร์ดวิเคราะห์การท่องเที่ยวและเศรษฐกิจรายจังหวัด</h1>
+    <p class="hero-sub">ทุกตัวเลขตรวจสอบย้อนกลับได้ที่หน้า “แหล่งข้อมูลและวิธีวิเคราะห์”</p>
   </div>
 </header>
 
 <nav class="tabs" id="tabs" role="tablist" aria-label="เมนูหน้า">
-  <button role="tab" data-page="overview" class="on">1 · ภาพรวมการท่องเที่ยว</button>
+  <button role="tab" data-page="overview" class="on">1 · ภาพรวมการท่องเที่ยวและรายได้</button>
   <button role="tab" data-page="economy">2 · การท่องเที่ยวกับเศรษฐกิจ</button>
-  <button role="tab" data-page="cost">3 · ค่าครองชีพ</button>
-  <button role="tab" data-page="concentration">4 · ปัจจัยการกระจุกตัว</button>
-  <button role="tab" data-page="sources">5 · แหล่งข้อมูลและวิธีวิเคราะห์</button>
+  <button role="tab" data-page="concentration">3 · ที่พักและการกระจุกตัว</button>
+  <button role="tab" data-page="sources">4 · แหล่งข้อมูลและวิธีวิเคราะห์</button>
 </nav>
 
 <section class="filters" id="filters" aria-label="ตัวกรอง">
@@ -55,29 +55,49 @@
   <!-- ===================== PAGE 1 ===================== -->
   <section class="page" id="page-overview" hidden>
     <div class="kpis" id="ov-kpis"></div>
+    <article class="card c-teal">
+      <div class="card-head">
+        <h2>แผนที่รายจังหวัด</h2>
+        <div class="seg" id="ov-metric" role="group" aria-label="ตัวชี้วัดบนแผนที่">
+          <button data-v="visitors">นักท่องเที่ยว</button>
+          <button data-v="income" class="on">รายได้รวม</button>
+          <button data-v="thaiInc">รายได้จากชาวไทย</button>
+          <button data-v="forInc">รายได้จากชาวต่างชาติ</button>
+        </div>
+      </div>
+      <p class="desc" id="ov-map-desc"></p>
+      <div id="ov-map" class="map" role="img" aria-label="แผนที่ประเทศไทยแสดงนักท่องเที่ยวหรือรายได้รายจังหวัด"></div>
+      <div id="ov-map-legend" class="legend2"></div>
+      <p class="src" id="ov-map-src"></p>
+    </article>
     <div class="grid g2">
-      <article class="card">
-        <h2>แผนที่การกระจายตัวของนักท่องเที่ยวรายจังหวัด</h2>
-        <p class="desc" id="ov-map-desc"></p>
-        <div id="ov-map" class="map" role="img" aria-label="แผนที่ประเทศไทยแสดงจำนวนนักท่องเที่ยวรายจังหวัด"></div>
-        <div id="ov-map-legend" class="legend"></div>
-        <p class="src" id="ov-map-src"></p>
-      </article>
-      <article class="card">
-        <h2>10 จังหวัดที่มีนักท่องเที่ยวสูงสุด</h2>
-        <p class="desc">ชี้เมาส์ (หรือแตะ) ที่ชื่อจังหวัดเพื่อดูภาพสถานที่ท่องเที่ยวประจำจังหวัด</p>
+      <article class="card c-teal">
+        <div class="card-head"><h2 id="ov-top-title">10 จังหวัดที่มีรายได้สูงสุด</h2>
+          <div class="seg" id="ov-top-metric" role="group" aria-label="ประเภทรายได้">
+            <button data-v="income" class="on">รายได้รวม</button>
+            <button data-v="thaiInc">รายได้จากชาวไทย</button>
+            <button data-v="forInc">รายได้จากชาวต่างชาติ</button>
+          </div></div>
+        <p class="desc">รายได้รวม = แท่งแบ่งสีตามที่มา (เขียว = ชาวไทย · น้ำเงิน = ชาวต่างชาติ) · ชี้ที่ชื่อจังหวัดเพื่อดูภาพสถานที่ท่องเที่ยว · ป้าย = เมืองหลัก/เมืองรอง</p>
         <div id="ov-top10" class="toplist"></div>
         <p class="src" id="ov-top-src"></p>
       </article>
+      <article class="card c-blue">
+        <h2>นักท่องเที่ยว เทียบกับ รายได้ รายจังหวัด</h2>
+        <p class="desc" id="ov-sc-desc"></p>
+        <div id="ov-scatter" class="chart md"></div>
+        <p class="src" id="ov-sc-src"></p>
+      </article>
     </div>
     <div class="grid g2">
-      <article class="card">
-        <h2>สัดส่วนนักท่องเที่ยวชาวไทยและชาวต่างชาติ</h2>
+      <article class="card c-teal">
+        <h2>สัดส่วนนักท่องเที่ยวและรายได้: ชาวไทย เทียบกับชาวต่างชาติ</h2>
         <div id="ov-share" class="chart sm"></div>
         <p class="src" id="ov-share-src"></p>
       </article>
-      <article class="card">
+      <article class="card c-amber">
         <h2>แนวโน้มรายปี 2015–2023</h2>
+        <div class="seg" id="ov-trend-metric"><button data-v="visitors" class="on">นักท่องเที่ยว</button><button data-v="income">รายได้</button></div>
         <div id="ov-trend" class="chart sm"></div>
         <p class="src" id="ov-trend-src"></p>
       </article>
@@ -90,7 +110,7 @@
     <div id="eco-blocked" class="state info" hidden></div>
     <div id="eco-body">
       <div class="kpis" id="eco-kpis"></div>
-      <article class="card">
+      <article class="card c-blue">
         <div class="card-head">
           <h2>จำนวนนักท่องเที่ยว เทียบกับ GPP รายจังหวัด</h2>
           <div class="seg" id="eco-metric" role="group" aria-label="ตัวชี้วัดแกน Y">
@@ -108,13 +128,16 @@
         <p class="src" id="eco-scatter-src"></p>
       </article>
       <div class="grid g2">
-        <article class="card"><h2>จัดอันดับ GPP (ล้านบาท, ปริมาณลูกโซ่)</h2><div id="eco-rank-gpp" class="chart md"></div><p class="src" id="eco-rank1-src"></p></article>
-        <article class="card"><h2>จัดอันดับ GPP ต่อหัว (บาท/คน/ปี)</h2><div id="eco-rank-pc" class="chart md"></div><p class="src" id="eco-rank2-src"></p></article>
+        <article class="card c-blue"><h2>จัดอันดับ GPP (ล้านบาท, ปริมาณลูกโซ่)</h2><div id="eco-rank-gpp" class="chart md"></div><p class="src" id="eco-rank1-src"></p></article>
+        <article class="card c-sky"><h2>จัดอันดับ GPP ต่อหัว (บาท/คน/ปี)</h2><div id="eco-rank-pc" class="chart md"></div><p class="src" id="eco-rank2-src"></p></article>
       </div>
-      <article class="card">
-        <h2>จัดกลุ่มจังหวัด 4 กลุ่ม (แบ่งด้วยค่ามัธยฐานของนักท่องเที่ยวและ GPP)</h2>
+      <article class="card c-violet">
+        <h2>จัดกลุ่มจังหวัด 4 กลุ่ม</h2>
         <p class="desc" id="eco-quad-desc"></p>
-        <div id="eco-quad" class="quad"></div>
+        <div class="grid g2 quadgrid">
+          <div id="eco-quad-chart" class="chart sm"></div>
+          <div id="eco-quad" class="quad"></div>
+        </div>
       </article>
       <article class="card findings" id="eco-findings"></article>
       <article class="card notice" id="eco-limits"></article>
@@ -122,52 +145,28 @@
   </section>
 
   <!-- ===================== PAGE 3 ===================== -->
-  <section class="page" id="page-cost" hidden>
-    <div id="cost-blocked" class="state info" hidden></div>
-    <div id="cost-body">
-      <article class="card notice warn" id="cost-warn"></article>
-      <div class="card ctrl">
-        <label>หมวดสินค้าและบริการ<select id="c-cat"></select></label>
-        <label>เปรียบเทียบจังหวัด<select id="c-prov"></select></label>
-      </div>
-      <div class="kpis" id="cost-kpis"></div>
-      <div class="grid g2">
-        <article class="card"><h2 id="cost-rank-title">จัดอันดับ CPI</h2><p class="desc" id="cost-rank-desc"></p><div id="cost-rank" class="chart tall"></div><p class="src" id="cost-rank-src"></p></article>
-        <article class="card"><h2 id="cost-infl-title">อัตราเงินเฟ้อรายจังหวัด</h2><p class="desc" id="cost-infl-desc"></p><div id="cost-infl" class="chart tall"></div><p class="src" id="cost-infl-src"></p></article>
-      </div>
-      <article class="card"><h2>แนวโน้ม CPI รายเดือน: จังหวัดท่องเที่ยวสูง เทียบกับจังหวัดอื่น</h2><p class="desc" id="cost-trend-desc"></p><div id="cost-trend" class="chart lg"></div><p class="src" id="cost-trend-src"></p></article>
-      <div class="grid g2">
-        <article class="card"><h2>CPI กับจำนวนนักท่องเที่ยว</h2>
-          <div class="seg" id="cost-sc-metric"><button data-v="level" class="on">ระดับ CPI</button><button data-v="infl">อัตราเงินเฟ้อ</button></div>
-          <div id="cost-scatter" class="chart md"></div><div id="cost-corr" class="corr"></div><p class="src" id="cost-sc-src"></p></article>
-        <article class="card"><h2>CPI รายหมวด: กลุ่มท่องเที่ยวสูง เทียบกับกลุ่มอื่น</h2><p class="desc" id="cost-cat-desc"></p><div id="cost-cats" class="chart md"></div><p class="src" id="cost-cats-src"></p></article>
-      </div>
-      <article class="card"><h2>ตารางเปรียบเทียบจังหวัดท่องเที่ยวหลักกับจังหวัดอื่น</h2><div id="cost-table" class="tablewrap"></div></article>
-      <article class="card findings" id="cost-findings"></article>
-    </div>
-  </section>
-
-  <!-- ===================== PAGE 4 ===================== -->
   <section class="page" id="page-concentration" hidden>
     <div class="kpis" id="con-kpis"></div>
-    <div class="grid g2">
-      <article class="card"><h2>การกระจุกตัวของนักท่องเที่ยวตามปี</h2><p class="desc">สัดส่วนนักท่องเที่ยวรวมของ 5 และ 10 จังหวัดแรก (จากทั้ง 77 จังหวัด)</p><div id="con-share" class="chart md"></div><p class="src" id="con-share-src"></p></article>
-      <article class="card"><h2>เมืองหลัก เทียบกับเมืองรอง</h2><p class="desc" id="con-city-desc"></p><div id="con-city" class="chart md"></div><p class="src" id="con-city-src"></p></article>
-    </div>
-    <article class="card">
-      <div class="card-head"><h2>B. ที่พัก: จำนวนรายการที่พัก เทียบกับนักท่องเที่ยว</h2>
-        <div class="seg" id="con-acc-metric"><button data-v="listings" class="on">จำนวนที่พัก (แห่ง)</button><button data-v="rooms">จำนวนห้องพัก</button></div></div>
+    <article class="card c-violet">
+      <div class="card-head"><h2>จำนวนห้องพักรายจังหวัด — คลิกเพื่อเปรียบเทียบ</h2>
+        <div class="seg" id="con-acc-metric"><button data-v="rooms" class="on">จำนวนห้องพัก</button><button data-v="listings">จำนวนที่พัก (แห่ง)</button></div></div>
+      <p class="desc" id="con-rank-desc"></p>
+      <div class="rank-scroll"><div id="con-rank" class="chart"></div></div>
+      <div id="con-compare" class="compare"></div>
+      <p class="src" id="con-rank-src"></p>
+    </article>
+    <article class="card c-violet">
+      <h2>การกระจายตัว: ที่พัก เทียบกับนักท่องเที่ยว</h2>
       <p class="desc" id="con-acc-desc"></p>
       <div id="con-acc" class="chart lg"></div><div id="con-acc-corr" class="corr"></div><p class="src" id="con-acc-src"></p>
     </article>
     <div class="grid g2">
-      <article class="card" id="con-air"></article>
-      <article class="card" id="con-policy"></article>
+      <article class="card c-teal"><h2>การกระจุกตัวของนักท่องเที่ยวตามปี</h2><p class="desc">สัดส่วนนักท่องเที่ยวรวมของ 5 และ 10 จังหวัดแรก (จากทั้ง 77 จังหวัด)</p><div id="con-share" class="chart md"></div><p class="src" id="con-share-src"></p></article>
+      <article class="card c-amber"><h2>เมืองหลัก เทียบกับเมืองรอง</h2><p class="desc" id="con-city-desc"></p><div id="con-city" class="chart md"></div><p class="src" id="con-city-src"></p></article>
     </div>
-    <article class="card"><h2>สรุปปัจจัย: ข้อมูลที่รองรับ และข้อมูลที่ยังขาด</h2><div id="con-summary" class="tablewrap"></div></article>
   </section>
 
-  <!-- ===================== PAGE 5 ===================== -->
+  <!-- ===================== PAGE 4 ===================== -->
   <section class="page" id="page-sources" hidden>
     <article class="card"><h2>ชุดข้อมูลที่ใช้ และสถานะการเข้าถึง (ตรวจเมื่อ <span id="src-date"></span>)</h2><div id="src-table" class="tablewrap"></div></article>
     <article class="card"><h2>ตัวแปรและนิยาม</h2><div id="src-dict" class="tablewrap"></div></article>
@@ -186,8 +185,6 @@
 
 <script src="vendor/plotly-basic.min.js"></script>
 <script src="vendor/leaflet.js"></script>
-<script src="vendor/papaparse.min.js"></script>
-<script src="vendor/xlsx.full.min.js"></script>
 <script src="data/dataset.js" onerror="window.__dataError='dataset'"></script>
 <script src="data/provinces.geo.js" onerror="window.__dataError='geo'"></script>
 <script src="data/images.js" onerror="window.__imgError=true"></script>
@@ -195,10 +192,8 @@
 <script src="js/stats.js"></script>
 <script src="js/model.js"></script>
 <script src="js/ui.js"></script>
-<script src="js/upload.js"></script>
 <script src="js/page-overview.js"></script>
 <script src="js/page-economy.js"></script>
-<script src="js/page-cost.js"></script>
 <script src="js/page-concentration.js"></script>
 <script src="js/page-sources.js"></script>
 <script src="js/app.js"></script>
