@@ -51,9 +51,9 @@
     const tI0 = TD.stats.sum(crows.map((i) => A[i].thaiInc)), fI0 = TD.stats.sum(crows.map((i) => A[i].forInc));
     const secTop = rows.filter((i) => TD.P[i].cityType === "เมืองรอง").sort((x, z) => TD.inc(A[z], f.type) - TD.inc(A[x], f.type))[0];
     TD.kpis("ov-kpis", [
-      { l: `รายได้จากนักท่องเที่ยวรวม (${typeLbl})`, v: TD.f.dec(sumI / 1e6, 2) + " ล้านล้านบาท", n: `ปี ${y} · ${TD.windowLabel(y)} · ${crows.length} จังหวัด` },
-      { l: "รายได้จากชาวไทย", v: TD.f.dec(tI0 / 1e6, 2) + " ล้านล้านบาท", n: `${TD.f.pct((tI0 / (tI0 + fI0)) * 100)} ของรายได้ทั้งหมด · ${TD.f.int(tI0)} ล้านบาท` },
-      { l: "รายได้จากชาวต่างชาติ", v: TD.f.dec(fI0 / 1e6, 2) + " ล้านล้านบาท", n: `${TD.f.pct((fI0 / (tI0 + fI0)) * 100)} ของรายได้ทั้งหมด · ${TD.f.int(fI0)} ล้านบาท` },
+      { l: `รายได้จากนักท่องเที่ยวรวม (${typeLbl})`, v: TD.f.baht(sumI), n: `ปี ${y} · ${TD.windowLabel(y)} · ${crows.length} จังหวัด` },
+      { l: "รายได้จากชาวไทย", v: TD.f.baht(tI0), n: `${TD.f.pct((tI0 / (tI0 + fI0)) * 100)} ของรายได้ทั้งหมด · ${TD.f.int(tI0)} ล้านบาท` },
+      { l: "รายได้จากชาวต่างชาติ", v: TD.f.baht(fI0), n: `${TD.f.pct((fI0 / (tI0 + fI0)) * 100)} ของรายได้ทั้งหมด · ${TD.f.int(fI0)} ล้านบาท` },
       { l: "จังหวัดที่มีรายได้สูงสุด", v: TD.P[byInc[0]].th, n: `${TD.f.int(TD.inc(A[byInc[0]], f.type))} ล้านบาท · ${TD.P[byInc[0]].cityType}` },
       secTop !== undefined ? { l: "เมืองรองที่มีรายได้สูงสุด", v: TD.P[secTop].th, n: `${TD.f.int(TD.inc(A[secTop], f.type))} ล้านบาท · นักท่องเที่ยว ${TD.f.people(TD.val(A[secTop], f.type))}คน` } : { l: "เมืองรองที่มีรายได้สูงสุด", v: "–", n: "ไม่มีเมืองรองในตัวกรองที่เลือก" },
       { l: `นักท่องเที่ยวรวม (${typeLbl})`, v: TD.f.people(sumV) + "คน", n: `รายได้เฉลี่ย ${TD.f.int((sumI / sumV) * 1e6)} บาท/คน · ครบทุกเดือน ${complete}/${crows.length} จังหวัด` },

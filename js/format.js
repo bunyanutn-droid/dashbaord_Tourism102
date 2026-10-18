@@ -14,6 +14,17 @@
       if (n >= 1e3) return (n / 1e3).toLocaleString("en-US", { maximumFractionDigits: 0 }) + " พัน";
       return Math.round(n).toLocaleString("en-US");
     },
+    /** money given in million baht -> largest readable Thai unit with value >= 1 (never shows 0.00 for a non-zero amount) */
+    baht: (mb) => {
+      if (!ok(mb)) return "–";
+      if (mb === 0) return "0 บาท";
+      const b = Math.abs(mb) * 1e6;
+      const units = [[1e12, "ล้านล้านบาท"], [1e11, "แสนล้านบาท"], [1e9, "พันล้านบาท"], [1e8, "ร้อยล้านบาท"], [1e7, "สิบล้านบาท"], [1e6, "ล้านบาท"], [1e5, "แสนบาท"], [1e4, "หมื่นบาท"], [1e3, "พันบาท"], [1, "บาท"]];
+      const [u, name] = units.find(([x]) => b >= x) || units[units.length - 1];
+      const v = (mb < 0 ? -b : b) / u;
+      const d = Math.abs(v) >= 100 ? 0 : Math.abs(v) >= 10 ? 1 : 2;
+      return v.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d }) + " " + name;
+    },
     r: (n) => (ok(n) ? (n >= 0 ? "+" : "−") + Math.abs(n).toFixed(2) : "–"),
   };
   TD.MONTHS_TH = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];

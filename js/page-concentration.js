@@ -34,9 +34,30 @@
     const rooms = TD.P.map((p) => ({ p, r: (TD.accom(p.code) || {}).rooms || 0 }));
     const totRooms = TD.stats.sum(rooms.map((q) => q.r));
     const topRoom = rooms.slice().sort((a, b) => b.r - a.r)[0];
+    // share of the province(s) the user picked: provinces chosen for comparison, otherwise the global province filter
+    let selCodes = S.cmp.length ? S.cmp.slice() : (f.prov !== "all" && TD.byCode[+f.prov] ? [+f.prov] : []);
+    const isTop5 = !selCodes.length;                      // nothing selected = all provinces -> show the top-5 share
+    if (isTop5) selCodes = TD.topProvinces(y, 5).map((i) => TD.P[i].code);
+    let selKpi;
+    {
+      const sel = selCodes.map((c) => A[TD.byCode[c].idx]).filter(Boolean);
+      const sT = TD.stats.sum(sel.map((a) => a.thai)), sF = TD.stats.sum(sel.map((a) => a.foreign));
+      const names = selCodes.map((c) => TD.byCode[c].th);
+      const nmLbl = isTop5 ? ` 5 จังหวัดแรก (${names.join(", ")})` : `${names.slice(0, 3).join(", ")}${names.length > 3 ? ` และอีก ${names.length - 3} จังหวัด` : ""}`;
+      if (f.type === "all") {
+        selKpi = { l: `สัดส่วนนักท่องเที่ยวของ${nmLbl} (${y})`,
+          v: TD.f.pct(((sT + sF) / vAll) * 100), n: `ของนักท่องเที่ยวทั้งประเทศ (${TD.f.people(sT + sF)}คน) · ชาวไทย ${TD.f.pct((sT / (sT + sF)) * 100)} · ชาวต่างชาติ ${TD.f.pct((sF / (sT + sF)) * 100)}` };
+      } else {
+        // only the visitor type chosen in the filter is shown
+        const mine = f.type === "thai" ? sT : sF;
+        const nat = TD.stats.sum(TD.P.map((p) => (A[p.idx] ? TD.val(A[p.idx], f.type) : 0)));
+        selKpi = { l: `สัดส่วนนักท่องเที่ยว${TD.typeLabel(f.type)}ของ${nmLbl} (${y})`,
+          v: TD.f.pct((mine / nat) * 100), n: `ของนักท่องเที่ยว${TD.typeLabel(f.type)}ทั้งประเทศ (${isTop5 ? "5 จังหวัดแรก" : "จังหวัดที่เลือก"} ${TD.f.people(mine)}คน จากทั้งประเทศ ${TD.f.people(nat)}คน)` };
+      }
+    }
     TD.kpis("con-kpis", [
       { l: `ห้องพักรวมในฐานข้อมูล ททท.`, v: TD.f.int(totRooms) + " ห้อง", n: `มากสุด: ${topRoom.p.th} ${TD.f.int(topRoom.r)} ห้อง (snapshot 2026)`, cls: "con" },
-      { l: `สัดส่วนนักท่องเที่ยว 5 จังหวัดแรก (${y})`, v: TD.f.pct(top5), n: TD.topProvinces(y, 5).map(TD.pName).join(", ") },
+      selKpi,
       { l: "สัดส่วน 10 จังหวัดแรก", v: TD.f.pct(top10), n: `จาก 77 จังหวัด · เดือน ${TD.monthsLabel(win)}` },
       { l: `เมืองรอง ${sec.length} จังหวัด`, v: TD.f.pct((vSec / vAll) * 100), n: `ของนักท่องเที่ยวรวม (เมืองหลัก ${main.length} จังหวัด)` },
     ]);
@@ -116,10 +137,17 @@
 
     /* ---------- concentration over time ---------- */
     const yrs = TD.years;
+    const topNames = (yy, n) => TD.topProvinces(yy, n).map((i, k) => `${k + 1}. ${TD.P[i].th}`);
+    const hover = (n) => yrs.map((yy) => topNames(yy, n).join("<br>"));
     TD.plot("con-share", [
-      { type: "scatter", mode: "lines+markers", name: "5 จังหวัดแรก", x: yrs, y: yrs.map((yy) => shareTop(TD.agg(yy, TD.D.tourism.commonMonths[String(yy)]), 5)), line: { color: C.con, width: 3 } },
-      { type: "scatter", mode: "lines+markers", name: "10 จังหวัดแรก", x: yrs, y: yrs.map((yy) => shareTop(TD.agg(yy, TD.D.tourism.commonMonths[String(yy)]), 10)), line: { color: "#a78bfa", width: 3 } },
+      { type: "scatter", mode: "lines+markers", name: "5 จังหวัดแรก", x: yrs, y: yrs.map((yy) => shareTop(TD.agg(yy, TD.D.tourism.commonMonths[String(yy)]), 5)), customdata: hover(5), line: { color: "#e11d48", width: 4 }, marker: { size: 9, symbol: "circle" }, hovertemplate: "<b>ปี %{x} · 5 จังหวัดแรก %{y:.1f}%</b><br>%{customdata}<extra></extra>" },
+      { type: "scatter", mode: "lines+markers", name: "10 จังหวัดแรก", x: yrs, y: yrs.map((yy) => shareTop(TD.agg(yy, TD.D.tourism.commonMonths[String(yy)]), 10)), customdata: hover(10), line: { color: "#2563eb", width: 4, dash: "dash" }, marker: { size: 9, symbol: "diamond" }, hovertemplate: "<b>ปี %{x} · 10 จังหวัดแรก %{y:.1f}%</b><br>%{customdata}<extra></extra>" },
     ], { yaxis: { title: "สัดส่วนของนักท่องเที่ยวรวม (%)", range: [0, 100] }, xaxis: { title: "ปี (ค.ศ.) — 2023 = ม.ค.–ก.ค.", dtick: 1 }, legend: { orientation: "h", y: -0.4 }, margin: { l: 60, r: 10, t: 10, b: 90 } });
+    const t5 = TD.topProvinces(y, 5), t10 = TD.topProvinces(y, 10);
+    const nm10 = (arr) => arr.map((i, k) => `<span style="white-space:nowrap">${k + 1}. ${TD.esc(TD.P[i].th)} <small>(${TD.f.pct(((TD.agg(y, win)[i] || { total: 0 }).total / vAll) * 100)})</small></span>`).join(" · ");
+    $("con-share-list").innerHTML = `<p><b style="color:#e11d48">━ 5 จังหวัดแรก ปี ${y}</b> (รวม ${TD.f.pct(top5)}): ${nm10(t5)}</p>
+      <p><b style="color:#2563eb">┅ 10 จังหวัดแรก ปี ${y}</b> (รวม ${TD.f.pct(top10)}): ${nm10(t10)}</p>
+      <p class="desc">ตัวเลขในวงเล็บคือสัดส่วนของแต่ละจังหวัดต่อนักท่องเที่ยวทั้งประเทศ · ชี้ที่จุดบนกราฟเพื่อดูรายชื่อของแต่ละปี</p>`;
     TD.setSrc("con-share-src", "tour");
     $("con-share-src").innerHTML += `<br>${TD.badge.calc} สัดส่วน = ผลรวมของ N จังหวัดแรก ÷ ผลรวม 77 จังหวัด ในเดือนที่ทุกจังหวัดมีข้อมูลของปีนั้น (ไทย+ต่างชาติ)`;
 

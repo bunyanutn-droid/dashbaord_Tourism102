@@ -167,3 +167,5 @@ th.sort{cursor:pointer}th.sort:hover{color:var(--teal-d)}
 a{color:var(--teal-d)}
 .leaflet-container{font-family:inherit}
 @media print{.tabs,.filters,.ghost,.seg{display:none}.page[hidden]{display:block!important}}
+
+.sharelist{font-size:.84rem;margin-top:6px}.sharelist p{margin:4px 0}
