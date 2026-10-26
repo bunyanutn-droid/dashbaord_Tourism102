@@ -55,11 +55,12 @@
           v: TD.f.pct((mine / nat) * 100), n: `ของนักท่องเที่ยว${TD.typeLabel(f.type)}ทั้งประเทศ (${isTop5 ? "5 จังหวัดแรก" : "จังหวัดที่เลือก"} ${TD.f.people(mine)}คน จากทั้งประเทศ ${TD.f.people(nat)}คน)` };
       }
     }
+    selKpi.cls = f.type === "thai" ? "thai" : f.type === "foreign" ? "foreign" : "neu";
     TD.kpis("con-kpis", [
-      { l: `ห้องพักรวมในฐานข้อมูล ททท.`, v: TD.f.int(totRooms) + " ห้อง", n: `มากสุด: ${topRoom.p.th} ${TD.f.int(topRoom.r)} ห้อง (snapshot 2026)`, cls: "con" },
+      { l: `ห้องพักรวมในฐานข้อมูล ททท.`, v: TD.f.int(totRooms) + " ห้อง", n: `มากสุด: ${topRoom.p.th} ${TD.f.int(topRoom.r)} ห้อง (snapshot 2026)`, cls: "tot" },
       selKpi,
-      { l: "สัดส่วน 10 จังหวัดแรก", v: TD.f.pct(top10), n: `จาก 77 จังหวัด · เดือน ${TD.monthsLabel(win)}` },
-      { l: `เมืองรอง ${sec.length} จังหวัด`, v: TD.f.pct((vSec / vAll) * 100), n: `ของนักท่องเที่ยวรวม (เมืองหลัก ${main.length} จังหวัด)` },
+      { l: "สัดส่วน 10 จังหวัดแรก", cls: "neu", v: TD.f.pct(top10), n: `จาก 77 จังหวัด · เดือน ${TD.monthsLabel(win)}` },
+      { l: `เมืองรอง ${sec.length} จังหวัด`, cls: "sec", v: TD.f.pct((vSec / vAll) * 100), n: `ของนักท่องเที่ยวรวม (เมืองหลัก ${main.length} จังหวัด)` },
     ]);
 
     /* ---------- rooms per province (click = add/remove from comparison) ---------- */
@@ -166,6 +167,38 @@
     ], { barmode: "stack", yaxis: { title: "สัดส่วน (%)", range: [0, 100] }, margin: { l: 55, r: 10, t: 10, b: 70 } });
     $("con-city-desc").innerHTML = `สัดส่วนของ “เมืองหลัก” (${main.length}) เทียบกับ “เมืองรอง” (${sec.length}) ตามการจัดประเภทที่ระบุในชุดข้อมูลนักท่องเที่ยวของ กก. · ปี ${y} ${TD.badge.raw}${TD.badge.calc}`;
     $("con-city-src").innerHTML = TD.SRC.tour() + "<br>" + TD.SRC.gpp() + "<br>" + TD.SRC.acc() + "<br><i>ห้องพักเป็น snapshot ปัจจุบัน ไม่ใช่ข้อมูลปี " + y + "</i>";
+
+    /* ---------- summary for the mascot: rooms versus visitors, concentration trend ---------- */
+    (function () {
+      const el = $("con-findings");
+      if (pts.length < 8) { el.innerHTML = `<h3>สรุป ${TD.badge.na}</h3><p>จังหวัดตามตัวกรองมีน้อยเกินไป จึงไม่สรุป</p>`; return; }
+      const li = [];
+      const rho = TD.stats.spearman(pts.map((q) => q.rooms), pts.map((q) => q.vis));
+      li.push(`<li><b>ห้องพักกับนักท่องเที่ยวสัมพันธ์กันในระดับ${TD.strength(rho)}</b> (Spearman ρ = ${TD.f.r(rho)}, ${pts.length} จังหวัด) — บอกได้เพียงว่าจังหวัดที่คนไปมากมักมีห้องพักมาก ไม่ได้บอกว่าห้องพักเป็นต้นเหตุให้คนไป หรือคนไปทำให้มีห้องพักเพิ่ม</li>`);
+      const big = pts.filter((q) => q.rooms >= 1000).map((q) => ({ q, per: q.vis / q.rooms })).sort((a, b) => b.per - a.per);
+      if (big.length >= 6) {
+        const nm = (o) => `<b>${TD.esc(o.q.p.th)}</b> (${TD.f.int(o.per)} คน/ห้อง)`;
+        li.push(`<li><b>จำนวนนักท่องเที่ยวต่อห้อง ต่างกันหลายเท่า:</b> สูงสุด ${big.slice(0, 3).map(nm).join(", ")} เทียบกับต่ำสุด ${big.slice(-3).reverse().map(nm).join(", ")} — ค่าสูงอาจหมายถึงที่พักตึงตัว หรือนักท่องเที่ยวส่วนใหญ่เที่ยวเช้า–เย็นกลับ ส่วนค่าต่ำอาจหมายถึงห้องพักเหลือ แต่ข้อมูลไม่พอแยกสาเหตุ (เทียบเฉพาะจังหวัดที่มี ≥ 1,000 ห้อง)</li>`);
+      }
+      const rv = TD.stats.rankDesc(pts.map((q) => q.vis)), rr = TD.stats.rankDesc(pts.map((q) => q.rooms));
+      const gap = pts.map((q, k) => ({ q, rv: rv[k], rr: rr[k] })).filter((o) => o.rv <= 30 || o.rr <= 30);
+      const roomRich = gap.filter((o) => o.rv - o.rr >= 4).sort((a, b) => (b.rv - b.rr) - (a.rv - a.rr)).slice(0, 3);
+      const roomPoor = gap.filter((o) => o.rr - o.rv >= 4).sort((a, b) => (b.rr - b.rv) - (a.rr - a.rv)).slice(0, 3);
+      const gl = (arr) => arr.map((o) => `<b>${TD.esc(o.q.p.th)}</b> (ห้องพักอันดับ ${o.rr}, นักท่องเที่ยวอันดับ ${o.rv})`).join("; ");
+      if (roomRich.length) li.push(`<li><b>ห้องพักมากกว่าที่จำนวนนักท่องเที่ยวบอก:</b> ${gl(roomRich)}</li>`);
+      if (roomPoor.length) li.push(`<li><b>นักท่องเที่ยวมากกว่าที่จำนวนห้องพักบอก:</b> ${gl(roomPoor)}</li>`);
+      const sh = (yy) => shareTop(TD.agg(yy, TD.D.tourism.commonMonths[String(yy)]), 5);
+      const s15 = sh(2015), s19 = sh(2019), s20 = sh(2020), s22 = sh(2022);
+      if ([s15, s19, s20, s22].every(Number.isFinite)) {
+        li.push(`<li><b>การกระจุกตัว${s22 < s19 ? "ลดลงเล็กน้อย" : "เพิ่มขึ้น"}หลังโควิด:</b> 5 จังหวัดแรกครองนักท่องเที่ยว ${TD.f.pct(s15, 0)} (2015) → ${TD.f.pct(s19, 0)} (2019) → ${TD.f.pct(s20, 0)} (2020) → ${TD.f.pct(s22, 0)} (2022) — ค่อนข้างคงที่ตลอดการเปลี่ยนแปลงใหญ่ แสดงว่าโครงสร้างจังหวัดที่นักท่องเที่ยวนิยมเปลี่ยนช้ามาก</li>`);
+      }
+      if (S.cmp.length >= 2) {
+        const sel = S.cmp.map((cd) => pts.find((q) => q.p.code === cd)).filter(Boolean).map((q) => ({ q, per: q.vis / q.rooms })).sort((a, b) => b.per - a.per);
+        if (sel.length >= 2) li.push(`<li><b>จังหวัดที่เลือกเปรียบเทียบ:</b> ${TD.esc(sel[0].q.p.th)} มีนักท่องเที่ยวต่อห้องสูงสุด (${TD.f.int(sel[0].per)} คน/ห้อง) ส่วน${TD.esc(sel[sel.length - 1].q.p.th)}ต่ำสุด (${TD.f.int(sel[sel.length - 1].per)} คน/ห้อง) — ต่างกัน ${TD.f.dec(sel[0].per / sel[sel.length - 1].per, 1)} เท่า</li>`);
+      }
+      li.push(`<li><b>ข้อควรระวัง:</b> ห้องพักเป็นภาพรวมปัจจุบันจากฐานข้อมูล ททท. (ไม่ใช่รายปีและไม่ใช่สำมะโน) เทียบกับนักท่องเที่ยวปี ${y} จึงเป็นการเปรียบเทียบคร่าว ๆ</li>`);
+      el.innerHTML = `<h3>สรุป ${TD.badge.insight}</h3><ul>${li.join("")}</ul>`;
+    })();
   }
 
   TD.pages = TD.pages || {};

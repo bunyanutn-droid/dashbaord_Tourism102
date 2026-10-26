@@ -127,20 +127,18 @@
       return `<details class="${q}"><summary>${QN[q]} — ${g.length} จังหวัด</summary><div class="names">${g.length ? g.map((p) => `${p.city === "เมืองหลัก" ? "★" : "●"} ${TD.esc(p.name)} <small>(#${p.rx})</small>`).join(" · ") : "—"}</div></details>`;
     }).join("");
 
-    /* ---- automatic findings (all numbers come from the arrays above) ---- */
+    /* ---- summary (for the mascot): only what needs analysis, all numbers computed from the arrays above ---- */
     const rhoPc = TD.stats.spearman(xs, pts.map((p) => p.pc));
     const rhoG = TD.stats.spearman(xs, pts.map((p) => p.gpp));
-    const hh = pts.filter((p) => p.q === "q1").sort((a, b) => b.x - a.x).slice(0, 5);
-    const hl = pts.filter((p) => p.q === "q2").sort((a, b) => b.x - a.x).slice(0, 5);
-    const lh = pts.filter((p) => p.q === "q3").sort((a, b) => b[yKey] - a[yKey]).slice(0, 5);
-    const nm = (p) => `<b>${TD.esc(p.name)}</b> (นักท่องเที่ยวอันดับ ${p.rx}, GPP อันดับ ${p.rg}, GPP ต่อหัวอันดับ ${p.rp})`;
-    const dir = (r) => (r >= 0 ? "ไปในทิศทางเดียวกัน" : "สวนทางกัน");
-    $("eco-findings").innerHTML = `<h3>ข้อค้นพบอัตโนมัติ ${TD.badge.insight}</h3><ul>
-      <li>จาก ${pts.length} จังหวัด (ปี ${y}) ลำดับของนักท่องเที่ยว${typeLbl}กับลำดับของ GPP ${dir(rhoG)}: Spearman ρ = ${TD.f.r(rhoG)} (${TD.strength(rhoG)}) ส่วนกับ GPP ต่อหัวมี ρ = ${TD.f.r(rhoPc)} (${TD.strength(rhoPc)}) — สอดคล้องกับข้อสังเกตว่า “ขนาดเศรษฐกิจ” กับ “ผลผลิตต่อคน” เป็นคนละเรื่องกัน</li>
-      <li><b>นักท่องเที่ยวสูง และ ${yLbl.split(" (")[0]} สูง (≥ มัธยฐานทั้งคู่):</b> ${hh.length ? hh.map(nm).join("; ") : "ไม่มี"}</li>
-      <li><b>นักท่องเที่ยวสูง แต่ ${yLbl.split(" (")[0]} ต่ำกว่ามัธยฐาน:</b> ${hl.length ? hl.map(nm).join("; ") : "ไม่มี"}</li>
-      <li><b>นักท่องเที่ยวน้อย แต่ ${yLbl.split(" (")[0]} สูง:</b> ${lh.length ? lh.map(nm).join("; ") : "ไม่มี"} — ชุดข้อมูลนี้ไม่แยก GPP ตามสาขาการผลิต จึงยืนยันไม่ได้ว่า GPP สูงมาจากอุตสาหกรรมหรือภาคอื่น</li>
-      <li>ค่าสหสัมพันธ์เป็นเพียงความสัมพันธ์เชิงสถิติ ณ ปีเดียว (cross-section) จึงไม่พิสูจน์ว่านักท่องเที่ยวทำให้ GPP สูงขึ้น หรือ GPP สูงดึงดูดนักท่องเที่ยว</li></ul>`;
+    const gapUp = pts.filter((p) => p.rx - p.rg >= 10).sort((a, b) => (b.rx - b.rg) - (a.rx - a.rg)).slice(0, 3);     // GPP rank much better than visitor rank
+    const gapDown = pts.filter((p) => p.rg - p.rx >= 10).sort((a, b) => (b.rg - b.rx) - (a.rg - a.rx)).slice(0, 3);   // visitor rank much better than GPP rank
+    const gl = (arr, a1, a2) => arr.map((p) => `<b>${TD.esc(p.name)}</b> (นักท่องเที่ยวอันดับ ${p.rx} → ${a1} อันดับ ${a2(p)})`).join("; ");
+    const strong = Math.abs(rhoG) >= 0.4;
+    $("eco-findings").innerHTML = `<h3>สรุป ${TD.badge.insight}</h3><ul>
+      <li><b>นักท่องเที่ยวมากไม่ได้แปลว่าเศรษฐกิจใหญ่เสมอไป:</b> ลำดับนักท่องเที่ยว${typeLbl}สัมพันธ์กับลำดับ GPP ในระดับ${TD.strength(rhoG)} (Spearman ρ = ${TD.f.r(rhoG)}, ${pts.length} จังหวัด) ${strong ? "คือจังหวัดที่คนไปมากมักมี GPP สูงกว่า แต่ยังมีข้อยกเว้นชัดเจนด้านล่าง" : "จึงใช้จำนวนนักท่องเที่ยวทำนาย GPP ได้ไม่ดี"} ส่วนกับ GPP ต่อหัวสัมพันธ์น้อยกว่า (ρ = ${TD.f.r(rhoPc)}) แปลว่าคนไปมากไม่ได้ทำให้ผลผลิตเฉลี่ยต่อคนของคนในจังหวัดสูงตาม</li>
+      ${gapUp.length ? `<li><b>GPP สูงกว่าที่จำนวนนักท่องเที่ยวบอก:</b> ${gl(gapUp, "GPP", (p) => p.rg)} — เศรษฐกิจกลุ่มนี้น่าจะพึ่งพาภาคอื่น (เช่น อุตสาหกรรม) มากกว่าการท่องเที่ยว แต่ข้อมูลไม่แยก GPP รายสาขา จึงยืนยันไม่ได้</li>` : ""}
+      ${gapDown.length ? `<li><b>นักท่องเที่ยวมากแต่ GPP ต่ำกว่าที่คาด:</b> ${gl(gapDown, "GPP", (p) => p.rg)} — การท่องเที่ยวอาจไม่ได้ช่วยยกขนาดเศรษฐกิจ หรือเป็นการเดินทางเที่ยวระยะสั้นที่ใช้จ่ายน้อย (สมมติฐาน ไม่ใช่ข้อสรุป)</li>` : ""}
+      <li><b>ข้อควรระวัง:</b> เป็นความสัมพันธ์เชิงสถิติ ณ ปีเดียว ไม่พิสูจน์ว่าการท่องเที่ยวทำให้ GPP สูงขึ้นหรือในทางกลับกัน</li></ul>`;
 
     $("eco-limits").innerHTML = `<h3>ข้อจำกัดของการใช้ GPP วัดความเข้มแข็งทางเศรษฐกิจ</h3><ul>
       <li>GPP วัดมูลค่าการผลิตภายในจังหวัด ไม่ใช่รายได้ของประชาชน จังหวัดที่มีโรงงานหรืออุตสาหกรรมขนาดใหญ่อาจมี GPP สูงโดยไม่เกี่ยวกับการท่องเที่ยว (ห้ามสรุปว่า “GPP สูง = เศรษฐกิจดี”) — จึงแสดง GPP ต่อหัวควบคู่</li>

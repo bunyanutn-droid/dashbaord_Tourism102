@@ -10,10 +10,37 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="vendor/leaflet.css">
-<link rel="stylesheet" href="css/style.css?v=20261018b">
+<link rel="stylesheet" href="css/style.css?v=20261027c">
 </head>
 <body>
 
+<div id="cover" class="cover" role="dialog" aria-label="หน้าปกแดชบอร์ด">
+  <div class="cv-grid" aria-hidden="true"></div>
+  <div class="cv-shade"></div>
+  <div class="cv-inner">
+    <p class="cv-eyebrow">Thailand Tourism · Income · Economy</p>
+    <h1>แดชบอร์ดวิเคราะห์การท่องเที่ยว<br>และเศรษฐกิจรายจังหวัด</h1>
+    <p class="cv-sub" id="cv-sub"></p>
+    <button id="cv-open" class="cv-btn" type="button">Open Dashboard <span aria-hidden="true">→</span></button>
+    <button id="cv-story" class="cv-btn2" type="button">▶ ให้ตัวละครเล่าเรื่อง</button>
+    <p class="cv-hint">กดปุ่ม หรือกด Enter เพื่อเข้าสู่แดชบอร์ด</p>
+  </div>
+  <div class="cv-mascot" id="cv-mascot" aria-hidden="true"><div class="cv-say">สวัสดีค่ะ! มาดูกันว่านักท่องเที่ยวไปที่ไหนและได้เงินเท่าไร</div></div>
+  <p class="cv-credit">ภาพสถานที่ท่องเที่ยวจาก Wikimedia Commons ตามใบอนุญาตของแต่ละภาพ (ผู้ถ่ายและใบอนุญาตระบุไว้ใน data/images.js)</p>
+  <noscript><p style="position:absolute;bottom:20px;left:20px;color:#fff">ต้องเปิด JavaScript เพื่อใช้แดชบอร์ด</p></noscript>
+</div>
+
+<div class="app">
+<nav class="side" id="tabs" role="tablist" aria-label="เมนูหน้า">
+  <p class="side-title">เมนู</p>
+  <button role="tab" data-page="overview" class="on"><span class="ic" aria-hidden="true">📊</span><span class="lb">ภาพรวมการท่องเที่ยวและรายได้</span></button>
+  <button role="tab" data-page="map"><span class="ic" aria-hidden="true">🗺️</span><span class="lb">แผนที่รายจังหวัด</span></button>
+  <button role="tab" data-page="economy"><span class="ic" aria-hidden="true">💹</span><span class="lb">การท่องเที่ยวกับเศรษฐกิจ</span></button>
+  <button role="tab" data-page="concentration"><span class="ic" aria-hidden="true">🏨</span><span class="lb">ที่พักและการกระจุกตัว</span></button>
+  <button type="button" class="side-story" id="side-story"><span class="ic" aria-hidden="true">🎬</span><span class="lb">โหมดเล่าเรื่อง</span></button>
+  <button role="tab" data-page="sources"><span class="ic" aria-hidden="true">📚</span><span class="lb">แหล่งข้อมูลและวิธีวิเคราะห์</span></button>
+</nav>
+<div class="content">
 <header class="hero" id="hero">
   <div class="hero-photos" aria-hidden="true">
     <div style="background-image:url(assets/img/banner/sea.jpg)"></div>
@@ -28,12 +55,6 @@
   </div>
 </header>
 
-<nav class="tabs" id="tabs" role="tablist" aria-label="เมนูหน้า">
-  <button role="tab" data-page="overview" class="on">1 · ภาพรวมการท่องเที่ยวและรายได้</button>
-  <button role="tab" data-page="economy">2 · การท่องเที่ยวกับเศรษฐกิจ</button>
-  <button role="tab" data-page="concentration">3 · ที่พักและการกระจุกตัว</button>
-  <button role="tab" data-page="sources">4 · แหล่งข้อมูลและวิธีวิเคราะห์</button>
-</nav>
 
 <section class="filters" id="filters" aria-label="ตัวกรอง">
   <label>ปี (ค.ศ.)<select id="f-year"></select></label>
@@ -55,21 +76,6 @@
   <!-- ===================== PAGE 1 ===================== -->
   <section class="page" id="page-overview" hidden>
     <div class="kpis" id="ov-kpis"></div>
-    <article class="card c-teal">
-      <div class="card-head">
-        <h2>แผนที่รายจังหวัด</h2>
-        <div class="seg" id="ov-metric" role="group" aria-label="ตัวชี้วัดบนแผนที่">
-          <button data-v="visitors">นักท่องเที่ยว</button>
-          <button data-v="income" class="on">รายได้รวม</button>
-          <button data-v="thaiInc">รายได้จากชาวไทย</button>
-          <button data-v="forInc">รายได้จากชาวต่างชาติ</button>
-        </div>
-      </div>
-      <p class="desc" id="ov-map-desc"></p>
-      <div id="ov-map" class="map" role="img" aria-label="แผนที่ประเทศไทยแสดงนักท่องเที่ยวหรือรายได้รายจังหวัด"></div>
-      <div id="ov-map-legend" class="legend2"></div>
-      <p class="src" id="ov-map-src"></p>
-    </article>
     <div class="grid g2">
       <article class="card c-teal">
         <div class="card-head"><h2 id="ov-top-title">10 จังหวัดที่มีรายได้สูงสุด</h2>
@@ -78,7 +84,7 @@
             <button data-v="thaiInc">รายได้จากชาวไทย</button>
             <button data-v="forInc">รายได้จากชาวต่างชาติ</button>
           </div></div>
-        <p class="desc">รายได้รวม = แท่งแบ่งสีตามที่มา (เขียว = ชาวไทย · น้ำเงิน = ชาวต่างชาติ) · ชี้ที่ชื่อจังหวัดเพื่อดูภาพสถานที่ท่องเที่ยว · ป้าย = เมืองหลัก/เมืองรอง</p>
+        <p class="desc">รายได้รวม = แท่งแบ่งสีตามที่มา (เขียว = ชาวไทย · ชมพู = ชาวต่างชาติ) · ชี้ที่ชื่อจังหวัดเพื่อดูภาพสถานที่ท่องเที่ยว · ป้าย = เมืองหลัก/เมืองรอง</p>
         <div id="ov-top10" class="toplist"></div>
         <p class="src" id="ov-top-src"></p>
       </article>
@@ -102,10 +108,40 @@
         <p class="src" id="ov-trend-src"></p>
       </article>
     </div>
+    <article class="card c-amber">
+      <h2>การฟื้นตัวของการท่องเที่ยวเทียบกับปี 2019 (ก่อนโควิด-19)</h2>
+      <p class="desc" id="ov-rec-desc"></p>
+      <div id="ov-recovery" class="chart md"></div>
+      <p class="src" id="ov-rec-src"></p>
+    </article>
+    <article class="card findings" id="ov-findings"></article>
     <article class="card notice" id="ov-notes"></article>
   </section>
 
-  <!-- ===================== PAGE 2 ===================== -->
+  <!-- ===================== PAGE 2 : MAP ===================== -->
+  <section class="page" id="page-map" hidden>
+    <article class="card c-teal">
+      <div class="card-head">
+        <h2>แผนที่รายจังหวัด</h2>
+        <span><button class="play" id="ov-play" type="button">▶ เล่นตามปี</button><span id="ov-play-year" class="playyear"></span></span>
+        <div class="seg" id="ov-metric" role="group" aria-label="ตัวชี้วัดบนแผนที่">
+          <button data-v="visitors">นักท่องเที่ยว</button>
+          <button data-v="income" class="on">รายได้รวม</button>
+          <button data-v="thaiInc">รายได้จากชาวไทย</button>
+          <button data-v="forInc">รายได้จากชาวต่างชาติ</button>
+        </div>
+      </div>
+      <p class="desc" id="ov-map-desc"></p>
+      <div id="ov-map" class="map" role="img" aria-label="แผนที่ประเทศไทยแสดงนักท่องเที่ยวหรือรายได้รายจังหวัด"></div>
+      <div id="ov-map-legend" class="legend2"></div>
+      <div id="ov-map-pick" class="mappick"></div>
+      <p class="src" id="ov-map-src"></p>
+    </article>
+    <article class="card c-teal" id="ov-profile" hidden></article>
+    <article class="card findings" id="map-findings"></article>
+  </section>
+
+  <!-- ===================== PAGE 3 ===================== -->
   <section class="page" id="page-economy" hidden>
     <div id="eco-blocked" class="state info" hidden></div>
     <div id="eco-body">
@@ -127,10 +163,6 @@
         <div id="eco-corr" class="corr"></div>
         <p class="src" id="eco-scatter-src"></p>
       </article>
-      <div class="grid g2">
-        <article class="card c-blue"><h2>จัดอันดับ GPP (ล้านบาท)</h2><div id="eco-rank-gpp" class="chart md"></div><p class="src" id="eco-rank1-src"></p></article>
-        <article class="card c-sky"><h2>จัดอันดับ GPP ต่อหัว (บาท/คน/ปี)</h2><div id="eco-rank-pc" class="chart md"></div><p class="src" id="eco-rank2-src"></p></article>
-      </div>
       <article class="card c-violet">
         <h2>จัดกลุ่มจังหวัด 4 กลุ่ม</h2>
         <p class="desc" id="eco-quad-desc"></p>
@@ -139,6 +171,10 @@
           <div id="eco-quad" class="quad"></div>
         </div>
       </article>
+      <div class="grid g2">
+        <article class="card c-blue"><h2>จัดอันดับ GPP (ล้านบาท)</h2><div id="eco-rank-gpp" class="chart md"></div><p class="src" id="eco-rank1-src"></p></article>
+        <article class="card c-sky"><h2>จัดอันดับ GPP ต่อหัว (บาท/คน/ปี)</h2><div id="eco-rank-pc" class="chart md"></div><p class="src" id="eco-rank2-src"></p></article>
+      </div>
       <article class="card findings" id="eco-findings"></article>
       <article class="card notice" id="eco-limits"></article>
     </div>
@@ -164,6 +200,7 @@
       <article class="card c-teal"><h2>การกระจุกตัวของนักท่องเที่ยวตามปี</h2><p class="desc">สัดส่วนนักท่องเที่ยวรวมของ 5 และ 10 จังหวัดแรก (จากทั้ง 77 จังหวัด)</p><div id="con-share" class="chart md"></div><div id="con-share-list" class="sharelist"></div><p class="src" id="con-share-src"></p></article>
       <article class="card c-amber"><h2>เมืองหลัก เทียบกับเมืองรอง</h2><p class="desc" id="con-city-desc"></p><div id="con-city" class="chart md"></div><p class="src" id="con-city-src"></p></article>
     </div>
+    <article class="card findings" id="con-findings"></article>
   </section>
 
   <!-- ===================== PAGE 4 ===================== -->
@@ -182,20 +219,25 @@
 
 <div id="hovercard" class="hovercard" hidden></div>
 <footer class="foot"><p>ข้อมูลทั้งหมดมาจากหน่วยงานทางการตามที่ระบุในหน้า “แหล่งข้อมูล” · ความสัมพันธ์ที่แสดงเป็นความสัมพันธ์เชิงสถิติ ไม่ใช่หลักฐานเชิงเหตุและผล · รูปภาพจาก Wikimedia Commons ตามเงื่อนไขใบอนุญาตที่ระบุ</p></footer>
+</div>
+</div>
 
 <script src="vendor/plotly-basic.min.js"></script>
 <script src="vendor/leaflet.js"></script>
-<script src="data/dataset.js?v=20261018b" onerror="window.__dataError='dataset'"></script>
-<script src="data/provinces.geo.js?v=20261018b" onerror="window.__dataError='geo'"></script>
-<script src="data/images.js?v=20261018b" onerror="window.__imgError=true"></script>
-<script src="js/format.js?v=20261018b"></script>
-<script src="js/stats.js?v=20261018b"></script>
-<script src="js/model.js?v=20261018b"></script>
-<script src="js/ui.js?v=20261018b"></script>
-<script src="js/page-overview.js?v=20261018b"></script>
-<script src="js/page-economy.js?v=20261018b"></script>
-<script src="js/page-concentration.js?v=20261018b"></script>
-<script src="js/page-sources.js?v=20261018b"></script>
-<script src="js/app.js?v=20261018b"></script>
+<script src="data/dataset.js?v=20261027c" onerror="window.__dataError='dataset'"></script>
+<script src="data/provinces.geo.js?v=20261027c" onerror="window.__dataError='geo'"></script>
+<script src="data/images.js?v=20261027c" onerror="window.__imgError=true"></script>
+<script src="js/mascot.js?v=20261027c"></script>
+<script src="js/cover.js?v=20261027c"></script>
+<script src="js/format.js?v=20261027c"></script>
+<script src="js/stats.js?v=20261027c"></script>
+<script src="js/model.js?v=20261027c"></script>
+<script src="js/ui.js?v=20261027c"></script>
+<script src="js/page-overview.js?v=20261027c"></script>
+<script src="js/page-economy.js?v=20261027c"></script>
+<script src="js/page-concentration.js?v=20261027c"></script>
+<script src="js/page-sources.js?v=20261027c"></script>
+<script src="js/app.js?v=20261027c"></script>
+<script src="js/story.js?v=20261027c"></script>
 </body>
 </html>

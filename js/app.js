@@ -2,7 +2,7 @@
 (function () {
   const TD = window.TD;
   const $ = (id) => document.getElementById(id);
-  const PAGES = ["overview", "economy", "concentration", "sources"];
+  const PAGES = ["overview", "map", "economy", "concentration", "sources"];
 
   function fail(title, detail) {
     $("state-loading").hidden = true;
@@ -49,9 +49,13 @@
       console.error(err);
       fail("แสดงผลหน้านี้ไม่สำเร็จ", `เกิดข้อผิดพลาดในการประมวลผล: <code>${TD.esc(err.message)}</code> — ลองล้างตัวกรอง หรือเลือกปีอื่น`);
     }
+    if (TD.updateMascot) TD.updateMascot();
   };
 
+  TD.showPage = (p) => show(p);
   function show(page) {
+    if (TD.stopPlay) TD.stopPlay();
+    if (TD.closeMascot) TD.closeMascot();
     TD.state.page = page;
     PAGES.forEach((p) => { $("page-" + p).hidden = p !== page; });
     TD.$$("#tabs button").forEach((b) => b.classList.toggle("on", b.dataset.page === page));
