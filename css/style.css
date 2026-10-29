@@ -173,7 +173,7 @@ a{color:var(--teal-d)}
 .ranks{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
 .rk-chip{border:1px solid var(--line);border-radius:10px;padding:6px 10px;background:#fff}
 .rk-chip span{display:block;font-size:.74rem;color:var(--muted)}
-.rk-chip b{font-size:1.25rem;color:#0f766e}
+.rk-chip b{display:block;font-size:1.3rem;line-height:1.25;color:#0f766e}
 .rk-chip small{display:block;font-size:.72rem;color:var(--muted)}
 
 #ov-profile{scroll-margin-top:70px}
@@ -374,3 +374,11 @@ body.story-on #mascot{display:none}
 @keyframes pickPulse{0%,100%{box-shadow:0 4px 14px rgba(245,158,11,.25)}50%{box-shadow:0 4px 22px rgba(245,158,11,.55)}}
 @keyframes pickBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 @media (prefers-reduced-motion:reduce){.mappick.need,.mappick .pin{animation:none}}
+
+/* province profile chips: headline value + small rank line, tinted like the KPI cards */
+.rk-chip.thai{background:#ecfdf5;border-color:#a7f3d0}.rk-chip.thai b{color:#047857}
+.rk-chip.foreign{background:#fdf2f8;border-color:#fbcfe8}.rk-chip.foreign b{color:#be185d}
+.rk-chip.tot{background:#f0f9ff;border-color:#bae6fd}.rk-chip.tot b{color:#0369a1}
+.rk-chip.eco{background:#eff6ff;border-color:#bfdbfe}.rk-chip.eco b{color:#1d4ed8}
+.rk-chip.neu{background:#f8fafc}.rk-chip.neu b{color:#334155}
+.rk-chip small{margin-top:2px}

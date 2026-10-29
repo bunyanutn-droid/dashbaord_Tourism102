@@ -186,24 +186,30 @@
     const all = TD.P.filter((q) => A[q.idx]);
     const rank = (fn) => { const v = fn(p); if (!Number.isFinite(v)) return "–"; return 1 + all.filter((q) => fn(q) > v).length; };
     const a = A[p.idx];
-    const ipv = (q) => TD.inc(A[q.idx], f.type) / TD.val(A[q.idx], f.type);
+    const ipv = (q) => A[q.idx].inc / A[q.idx].total;
     const rooms = (q) => (TD.accom(q.code) || {}).rooms;
     const hasG = TD.gppYears().includes(y) && y <= 2022;
+    const rk = (r) => (r === "–" ? "ไม่มีอันดับ" : `อันดับ #${r} จาก ${all.length}`);
+    /* [label, big value, rank, class]: the value is the headline, the rank is the small line underneath */
     const items = [
-      ["นักท่องเที่ยว", rank((q) => TD.val(A[q.idx], f.type)), TD.f.people(TD.val(a, f.type)) + "คน"],
-      ["รายได้จากนักท่องเที่ยว", rank((q) => TD.inc(A[q.idx], f.type)), TD.f.baht(TD.inc(a, f.type))],
-      ["รายได้ต่อนักท่องเที่ยว", rank(ipv), TD.f.int(ipv(p) * 1e6) + " บาท/คน"],
-      ["GPP", hasG ? rank((q) => TD.gpp(q.code, y)) : "–", hasG ? TD.f.int(TD.gpp(p.code, y)) + " ล้านบาท" : "ไม่มีข้อมูลปีนี้"],
-      ["GPP ต่อหัว", hasG ? rank((q) => TD.gppPc(q.code, y)) : "–", hasG ? TD.f.int(TD.gppPc(p.code, y)) + " บาท/คน" : "ไม่มีข้อมูลปีนี้"],
-      ["ห้องพัก (snapshot)", rank(rooms), TD.f.int(rooms(p)) + " ห้อง"],
+      ["นักท่องเที่ยวรวม", TD.f.people(a.total) + "คน", rank((q) => A[q.idx].total), "tot"],
+      ["นักท่องเที่ยวชาวไทย", TD.f.people(a.thai) + "คน", rank((q) => A[q.idx].thai), "thai"],
+      ["นักท่องเที่ยวชาวต่างชาติ", TD.f.people(a.foreign) + "คน", rank((q) => A[q.idx].foreign), "foreign"],
+      ["รายได้รวมจากนักท่องเที่ยว", TD.f.baht(a.inc), rank((q) => A[q.idx].inc), "tot"],
+      ["รายได้จากชาวไทย", TD.f.baht(a.thaiInc), rank((q) => A[q.idx].thaiInc), "thai"],
+      ["รายได้จากชาวต่างชาติ", TD.f.baht(a.forInc), rank((q) => A[q.idx].forInc), "foreign"],
+      ["รายได้ต่อนักท่องเที่ยว", TD.f.int(ipv(p) * 1e6) + " บาท/คน", rank(ipv), "neu"],
+      ["GPP", hasG ? TD.f.int(TD.gpp(p.code, y)) + " ล้านบาท" : "ไม่มีข้อมูลปีนี้", hasG ? rank((q) => TD.gpp(q.code, y)) : "–", "eco"],
+      ["GPP ต่อหัว", hasG ? TD.f.int(TD.gppPc(p.code, y)) + " บาท/คน" : "ไม่มีข้อมูลปีนี้", hasG ? rank((q) => TD.gppPc(q.code, y)) : "–", "eco"],
+      ["ห้องพัก (snapshot)", TD.f.int(rooms(p)) + " ห้อง", rank(rooms), "neu"],
     ];
     const im = TD.image(p.code);
     const credit = im ? (im.kind === "attraction" ? TD.esc(im.subject) : "ภาพจากบทความจังหวัด") + " · " + TD.esc((im.author || "Wikimedia").replace(/^Original image:\s*/i, "")) + " · " + TD.esc(im.license || "") : "";
     card.innerHTML = `<div class="prof">
       <div class="prof-img">${im ? `<img src="${im.file}" alt="${TD.esc(im.subject)}"><small>${credit}</small>` : '<div class="none">ไม่มีรูปภาพ</div>'}</div>
       <div class="prof-body"><h2>โปรไฟล์จังหวัด: ${TD.esc(p.th)} ${chip(p)}</h2>
-        <p class="desc">${p.region} · ปี ${y} (${TD.windowLabel(y)}) · อันดับจากทั้ง ${all.length} จังหวัด (1 = สูงสุด) · ไทย ${TD.f.pct((a.thai / a.total) * 100, 0)} · ต่างชาติ ${TD.f.pct((a.foreign / a.total) * 100, 0)}</p>
-        <div class="ranks">${items.map(([t, r, v]) => `<div class="rk-chip"><span>${t}</span><b>${r === "–" ? "–" : "#" + r}</b><small>${v}</small></div>`).join("")}</div>
+        <p class="desc">${p.region} · ปี ${y} (${TD.windowLabel(y)}) · อันดับจากทั้ง ${all.length} จังหวัด (#1 = สูงสุด) · ไทย ${TD.f.pct((a.thai / a.total) * 100, 0)} · ต่างชาติ ${TD.f.pct((a.foreign / a.total) * 100, 0)}</p>
+        <div class="ranks">${items.map(([t, v, r, c]) => `<div class="rk-chip ${c}"><span>${t}</span><b>${v}</b><small>${rk(r)}</small></div>`).join("")}</div>
       </div></div>
       <div id="ov-prof-chart" class="chart sm"></div>
       <p class="src">${TD.SRC.tour()}<br>${TD.SRC.gpp()}<br>${TD.SRC.acc()}<br>${TD.badge.calc} อันดับและรายได้ต่อนักท่องเที่ยวคำนวณโดยแดชบอร์ด · ปิดโปรไฟล์ด้วยการเลือก “ทุกจังหวัด”</p>`;
