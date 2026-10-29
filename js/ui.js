@@ -37,6 +37,7 @@
     const yaxis = Object.assign({ gridcolor: c.line, zerolinecolor: c.line, linecolor: c.line }, layout.yaxis || {});
     const lay = Object.assign(base, layout, { xaxis, yaxis });
     el.classList.remove("empty");
+    if (el.style.height && parseInt(el.style.height, 10) > 0) lay.height = parseInt(el.style.height, 10);   // charts whose box is resized by code: Plotly.react would keep the old pixel height
     Plotly.react(el, data, lay, Object.assign({ responsive: true, displaylogo: false, modeBarButtonsToRemove: ["lasso2d", "select2d"] }, config));
   };
   TD.emptyChart = function (id, msg) {
