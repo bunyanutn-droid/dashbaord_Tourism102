@@ -7,7 +7,7 @@
     main: ["#dbe8ff", "#b3cdfc", "#85aef8", "#5589ef", "#2f63d8", "#1a3f9e"],
     sec: ["#fff0d1", "#fddb9b", "#fbc064", "#f3a22b", "#d97f06", "#9a5200"],
   };
-  const S = { metric: "income", trend: "visitors", season: "visitors", top: "income", fixed: false, timer: null, profFor: null };
+  const S = { metric: "income", trend: "visitors", share: "split", season: "visitors", top: "income", fixed: false, timer: null, profFor: null };
   const METRIC = {
     visitors: { t: "นักท่องเที่ยว", unit: "คน", get: (a, f) => TD.val(a, f.type), fmt: (v) => TD.f.people(v) + "คน" },
     income: { t: "รายได้รวม", unit: "ล้านบาท", get: (a, f) => TD.inc(a, f.type), fmt: (v) => TD.f.int(v) + " ล้านบาท" },
@@ -60,7 +60,7 @@
     if (!crows.length) {
       TD.kpis("ov-kpis", []);
       $("ov-top10").innerHTML = '<div class="empty">ไม่มีข้อมูลตามตัวกรองที่เลือก — ลองล้างตัวกรอง</div>';
-      ["ov-share", "ov-trend", "ov-scatter"].forEach((id) => TD.emptyChart(id));
+      ["ov-cmp-vis", "ov-cmp-inc", "ov-trend", "ov-scatter"].forEach((id) => TD.emptyChart(id));
       return;
     }
 
@@ -138,30 +138,55 @@
     $("ov-sc-desc").innerHTML += `<div class="corr">${TD.corrHTML(pts.map((q) => q.x), pts.map((q) => q.y), "")}</div>`;
     TD.setSrc("ov-sc-src", "tour");
 
-    /* ---- share (visitors and income, Thai vs foreign) ---- */
-    const thai = TD.stats.sum(crows.map((i) => A[i].thai)), fr = TD.stats.sum(crows.map((i) => A[i].foreign));
-    const tI = TD.stats.sum(crows.map((i) => A[i].thaiInc)), fI = TD.stats.sum(crows.map((i) => A[i].forInc));
+    /* ---- main cities vs secondary cities (all provinces matching the region filter; the province filter does not apply here) ---- */
     const c = TD.colors();
-    TD.plot("ov-share", [
-      { type: "bar", orientation: "h", name: "ชาวไทย", y: ["นักท่องเที่ยว", "รายได้"], x: [(thai / (thai + fr)) * 100, (tI / (tI + fI)) * 100], marker: { color: c.thai }, text: [TD.f.pct((thai / (thai + fr)) * 100), TD.f.pct((tI / (tI + fI)) * 100)], textposition: "inside", customdata: [[thai], [tI]], hovertemplate: "ชาวไทย %{x:.1f}%<br>%{customdata[0]:,.0f}<extra></extra>" },
-      { type: "bar", orientation: "h", name: "ชาวต่างชาติ", y: ["นักท่องเที่ยว", "รายได้"], x: [(fr / (thai + fr)) * 100, (fI / (tI + fI)) * 100], marker: { color: c.foreign }, text: [TD.f.pct((fr / (thai + fr)) * 100), TD.f.pct((fI / (tI + fI)) * 100)], textposition: "inside", customdata: [[fr], [fI]], hovertemplate: "ชาวต่างชาติ %{x:.1f}%<br>%{customdata[0]:,.0f}<extra></extra>" },
-    ], { barmode: "stack", xaxis: { title: "สัดส่วน (%)", range: [0, 100] }, margin: { l: 90, r: 10, t: 10, b: 60 }, legend: { orientation: "h", y: -0.3 } });
-    $("ov-share-src").innerHTML = TD.SRC.tour() + `<br>${TD.badge.calc} ${y}: นักท่องเที่ยวไทย ${TD.f.people(thai)} · ต่างชาติ ${TD.f.people(fr)}คน; รายได้ไทย ${TD.f.int(tI)} · ต่างชาติ ${TD.f.int(fI)} ล้านบาท (${crows.length} จังหวัด)`;
+    const mainR = rows.filter((i) => TD.P[i].cityType === "เมืองหลัก"), secR = rows.filter((i) => TD.P[i].cityType === "เมืองรอง");
+    const both = mainR.length > 0 && secR.length > 0;
+    const sm = (set, g) => TD.stats.sum(set.map((i) => g(A[i])));
+    if (!both) {
+      ["ov-cmp-vis", "ov-cmp-inc"].forEach((id) => TD.emptyChart(id, "ตัวกรองประเภทเมือง/ภูมิภาคเหลือกลุ่มเดียว — เลือก “ทั้งหมด” เพื่อเปรียบเทียบเมืองหลักกับเมืองรอง"));
+      $("ov-share-desc").textContent = "";
+    } else {
+      /* two stacked-bar charts (visitors, income): x = main / secondary cities, stack = Thai / foreign */
+      const THAI = "#3366f0", FOR = "#dd7300", cats = [`เมืองหลัก (${mainR.length} จังหวัด)`, `เมืองรอง (${secR.length} จังหวัด)`];
+      const draw = (id, title, yTitle, getT, getF, fmt) => {
+        const th = [sm(mainR, getT), sm(secR, getT)], fo = [sm(mainR, getF), sm(secR, getF)];
+        const tot = th.map((v, k) => v + fo[k]);
+        const lab = (arr) => arr.map((v, k) => (v / tot[k] >= 0.07 ? fmt(v) : ""));
+        const hov = (nm) => `%{x}<br>${nm} %{customdata[0]} (%{customdata[1]:.1f}%)<extra></extra>`;
+        TD.plot(id, [
+          { type: "bar", name: "ชาวไทย", x: cats, y: th, marker: { color: THAI }, text: lab(th), textposition: "inside", insidetextanchor: "middle", textfont: { color: "#fff", size: 13 }, customdata: th.map((v, k) => [fmt(v), (v / tot[k]) * 100]), hovertemplate: hov("ชาวไทย") },
+          { type: "bar", name: "ชาวต่างชาติ", x: cats, y: fo, marker: { color: FOR }, text: lab(fo), textposition: "inside", insidetextanchor: "middle", textfont: { color: "#fff", size: 13 }, customdata: fo.map((v, k) => [fmt(v), (v / tot[k]) * 100]), hovertemplate: hov("ชาวต่างชาติ") },
+        ], {
+          title: { text: `<b>${title}</b>`, x: 0.02, xanchor: "left", font: { size: 16 } }, barmode: "stack", bargap: 0.35,
+          xaxis: { showgrid: false }, yaxis: { title: yTitle, tickformat: ",.2s", rangemode: "tozero" },
+          legend: { orientation: "h", x: 0.02, y: 1.0, yanchor: "bottom" }, margin: { l: 70, r: 14, t: 78, b: 50 },
+          annotations: tot.map((t, k) => ({ x: cats[k], y: t, yanchor: "bottom", showarrow: false, yshift: 4, align: "center", font: { size: 12, color: "#111827" }, text: `<b>รวม ${fmt(t)}</b><br><span style="font-size:11px;color:#6b7280">ต่างชาติ ${TD.f.pct((fo[k] / t) * 100, 0)}</span>` })),
+        });
+      };
+      draw("ov-cmp-vis", "นักท่องเที่ยวรวม (คน)", "จำนวนนักท่องเที่ยว (คน)", (x) => x.thai, (x) => x.foreign, (v) => TD.f.people(v));
+      draw("ov-cmp-inc", "รายได้จากนักท่องเที่ยว (ล้านบาท)", "รายได้ (ล้านบาท)", (x) => x.thaiInc, (x) => x.forInc, (v) => TD.f.baht(v));
+      const shV = (sm(mainR, (a) => a.total) / (sm(mainR, (a) => a.total) + sm(secR, (a) => a.total))) * 100;
+      const shI = (sm(mainR, (a) => a.inc) / (sm(mainR, (a) => a.inc) + sm(secR, (a) => a.inc))) * 100;
+      const shF = (sm(mainR, (a) => a.forInc) / (sm(mainR, (a) => a.forInc) + sm(secR, (a) => a.forInc))) * 100;
+      $("ov-share-desc").innerHTML = `เมืองหลัก ${mainR.length} จังหวัด (${TD.f.pct((mainR.length / (mainR.length + secR.length)) * 100, 0)} ของจังหวัด) มีนักท่องเที่ยว <b>${TD.f.pct(shV, 0)}</b> และรายได้ <b>${TD.f.pct(shI, 0)}</b> ของทั้งหมด (รายได้จากชาวต่างชาติ ${TD.f.pct(shF, 0)}) · จำนวนจังหวัดของสองกลุ่มไม่เท่ากัน (ชี้เมาส์ที่แท่งเพื่อดูตัวเลขและ %) ${TD.badge.calc}`;
+    }
+    $("ov-share-src").innerHTML = TD.SRC.tour() + `<br>ปี ${y} · ${TD.windowLabel(y)} · จังหวัดตามตัวกรองภูมิภาค (ตัวกรองจังหวัดและประเภทนักท่องเที่ยวไม่มีผลกับส่วนนี้) · การจัดประเภทเมืองหลัก/เมืองรองตามชุดข้อมูลของ กก.`;
 
-    /* ---- yearly trend ---- */
-    const th = [], fo = [], lbl = [];
-    TD.years.forEach((yy) => {
-      const AA = TD.agg(yy, TD.window(yy));
-      const g = (fn) => TD.stats.sum(crows.map((i) => (AA[i] ? fn(AA[i]) : 0)));
-      if (S.trend === "visitors") { th.push(g((a) => a.thai)); fo.push(g((a) => a.foreign)); } else { th.push(g((a) => a.thaiInc)); fo.push(g((a) => a.forInc)); }
-      lbl.push(yy === 2023 ? "2023 (ม.ค.–ก.ค.)" : String(yy));
-    });
-    const unit = S.trend === "visitors" ? "คน" : "ล้านบาท";
+    /* ---- yearly trend: main vs secondary cities, Thai vs foreign ---- */
+    const lbl = TD.years.map((yy) => (yy === 2023 ? "2023 (ม.ค.–ก.ค.)" : String(yy)));
+    const inc = S.trend === "income", unit = inc ? "ล้านบาท" : "คน";
+    const ser = (set, g) => TD.years.map((yy) => { const AA = TD.agg(yy, TD.window(yy)); return TD.stats.sum(set.map((i) => (AA[i] ? g(AA[i]) : 0))); });
     const tr = [];
-    if (f.type !== "foreign") tr.push({ type: "bar", name: "ชาวไทย", x: lbl, y: th, marker: { color: c.thai }, hovertemplate: "%{x}<br>ชาวไทย %{y:,.0f} " + unit + "<extra></extra>" });
-    if (f.type !== "thai") tr.push({ type: "bar", name: "ชาวต่างชาติ", x: lbl, y: fo, marker: { color: c.foreign }, hovertemplate: "%{x}<br>ชาวต่างชาติ %{y:,.0f} " + unit + "<extra></extra>" });
-    TD.plot("ov-trend", tr, { barmode: "stack", xaxis: { title: "ปี (ค.ศ.)" }, yaxis: { title: (S.trend === "visitors" ? "จำนวนนักท่องเที่ยว (คน)" : "รายได้ (ล้านบาท)"), tickformat: ",.2s" }, margin: { l: 70, r: 10, t: 10, b: 60 } });
-    $("ov-trend-src").innerHTML = TD.SRC.tour() + "<br>แต่ละปีใช้เดือนตามตัวเลือก “เทียบเฉพาะเดือนที่ทุกจังหวัดมีข้อมูล”";
+    [["เมืองหลัก", mainR, c.main, "circle"], ["เมืองรอง", secR, c.second, "diamond"]].forEach(([nm, set, col, sym]) => {
+      if (!set.length) return;
+      if (f.type !== "foreign") tr.push({ type: "scatter", mode: "lines+markers", name: `${nm} · ชาวไทย`, x: lbl, y: ser(set, inc ? (a) => a.thaiInc : (a) => a.thai), line: { color: col, width: 3 }, marker: { symbol: sym, size: 8 }, hovertemplate: `%{x}<br>${nm} · ชาวไทย %{y:,.0f} ${unit}<extra></extra>` });
+      if (f.type !== "thai") tr.push({ type: "scatter", mode: "lines+markers", name: `${nm} · ชาวต่างชาติ`, x: lbl, y: ser(set, inc ? (a) => a.forInc : (a) => a.foreign), line: { color: col, width: 3, dash: "dash" }, marker: { symbol: sym + "-open", size: 8 }, hovertemplate: `%{x}<br>${nm} · ชาวต่างชาติ %{y:,.0f} ${unit}<extra></extra>` });
+    });
+    if (tr.length) TD.plot("ov-trend", tr, { xaxis: { title: "ปี (ค.ศ.)" }, yaxis: { title: inc ? "รายได้ (ล้านบาท)" : "จำนวนนักท่องเที่ยว (คน)", tickformat: ",.2s", rangemode: "tozero" }, legend: { orientation: "h", y: -0.35 }, margin: { l: 70, r: 10, t: 10, b: 100 } });
+    else TD.emptyChart("ov-trend", "ไม่มีข้อมูลตามตัวกรอง");
+    $("ov-trend-desc").innerHTML = `สีน้ำเงิน = เมืองหลัก (${mainR.length} จังหวัด) · สีส้ม = เมืองรอง (${secR.length} จังหวัด) · เส้นทึบ = ชาวไทย · เส้นประ = ชาวต่างชาติ · จำนวนจังหวัดของสองกลุ่มไม่เท่ากัน ควรดูแนวโน้ม มากกว่าเทียบระดับตรงๆ ${TD.badge.calc}`;
+    $("ov-trend-src").innerHTML = TD.SRC.tour() + "<br>แต่ละปีใช้เดือนตามตัวเลือก “เทียบเฉพาะเดือนที่ทุกจังหวัดมีข้อมูล” (2021 ตัด ม.ค. · 2022 ตัด ส.ค. · 2023 มีถึง ก.ค.) จึงเทียบระดับข้ามปีได้เพียงคร่าวๆ";
 
     /* ---- notes ---- */
     const dup = TD.D.tourism.droppedDuplicates;

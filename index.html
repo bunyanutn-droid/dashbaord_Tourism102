@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="vendor/leaflet.css">
-<link rel="stylesheet" href="css/style.css?v=20261029i">
+<link rel="stylesheet" href="css/style.css?v=20261029n">
 </head>
 <body>
 
@@ -92,19 +92,22 @@
         <p class="src" id="ov-sc-src"></p>
       </article>
     </div>
-    <div class="grid g2">
-      <article class="card c-teal">
-        <h2>สัดส่วนนักท่องเที่ยวและรายได้: ชาวไทย เทียบกับชาวต่างชาติ</h2>
-        <div id="ov-share" class="chart sm"></div>
-        <p class="src" id="ov-share-src"></p>
-      </article>
-      <article class="card c-amber">
-        <h2>แนวโน้มรายปี 2015–2023</h2>
-        <div class="seg" id="ov-trend-metric"><button data-v="visitors" class="on">นักท่องเที่ยว</button><button data-v="income">รายได้</button></div>
-        <div id="ov-trend" class="chart sm"></div>
-        <p class="src" id="ov-trend-src"></p>
-      </article>
-    </div>
+    <article class="card c-teal">
+      <h2>เมืองหลัก เทียบกับ เมืองรอง</h2>
+      <p class="desc" id="ov-share-desc"></p>
+      <div class="cmp-pair">
+        <div class="cmpbox vis"><div id="ov-cmp-vis" class="chart cmpchart"></div></div>
+        <div class="cmpbox inc"><div id="ov-cmp-inc" class="chart cmpchart"></div></div>
+      </div>
+      <p class="src" id="ov-share-src"></p>
+    </article>
+    <article class="card c-amber">
+      <h2>แนวโน้มรายปี 2015–2023: เมืองหลัก เทียบ เมืองรอง</h2>
+      <div class="seg" id="ov-trend-metric"><button data-v="visitors" class="on">นักท่องเที่ยว</button><button data-v="income">รายได้</button></div>
+      <p class="desc" id="ov-trend-desc"></p>
+      <div id="ov-trend" class="chart sm"></div>
+      <p class="src" id="ov-trend-src"></p>
+    </article>
     <article class="card c-amber">
       <h2>การฟื้นตัวของการท่องเที่ยวเทียบกับปี 2019 (ก่อนโควิด-19)</h2>
       <p class="desc" id="ov-rec-desc"></p>
@@ -228,19 +231,19 @@
 
 <script src="vendor/plotly-basic.min.js"></script>
 <script src="vendor/leaflet.js"></script>
-<script src="data/dataset.js?v=20261029i" onerror="window.__dataError='dataset'"></script>
-<script src="data/provinces.geo.js?v=20261029i" onerror="window.__dataError='geo'"></script>
-<script src="data/images.js?v=20261029i" onerror="window.__imgError=true"></script>
-<script src="js/mascot.js?v=20261029i"></script>
-<script src="js/cover.js?v=20261029i"></script>
-<script src="js/format.js?v=20261029i"></script>
-<script src="js/stats.js?v=20261029i"></script>
-<script src="js/model.js?v=20261029i"></script>
-<script src="js/ui.js?v=20261029i"></script>
-<script src="js/page-overview.js?v=20261029i"></script>
-<script src="js/page-economy.js?v=20261029i"></script>
-<script src="js/page-concentration.js?v=20261029i"></script>
-<script src="js/page-sources.js?v=20261029i"></script>
-<script src="js/app.js?v=20261029i"></script>
+<script src="data/dataset.js?v=20261029n" onerror="window.__dataError='dataset'"></script>
+<script src="data/provinces.geo.js?v=20261029n" onerror="window.__dataError='geo'"></script>
+<script src="data/images.js?v=20261029n" onerror="window.__imgError=true"></script>
+<script src="js/mascot.js?v=20261029n"></script>
+<script src="js/cover.js?v=20261029n"></script>
+<script src="js/format.js?v=20261029n"></script>
+<script src="js/stats.js?v=20261029n"></script>
+<script src="js/model.js?v=20261029n"></script>
+<script src="js/ui.js?v=20261029n"></script>
+<script src="js/page-overview.js?v=20261029n"></script>
+<script src="js/page-economy.js?v=20261029n"></script>
+<script src="js/page-concentration.js?v=20261029n"></script>
+<script src="js/page-sources.js?v=20261029n"></script>
+<script src="js/app.js?v=20261029n"></script>
 </body>
 </html>

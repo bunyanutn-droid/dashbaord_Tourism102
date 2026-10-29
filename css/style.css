@@ -382,3 +382,39 @@ body.story-on #mascot{display:none}
 .rk-chip.eco{background:#eff6ff;border-color:#bfdbfe}.rk-chip.eco b{color:#1d4ed8}
 .rk-chip.neu{background:#f8fafc}.rk-chip.neu b{color:#334155}
 .rk-chip small{margin-top:2px}
+
+/* main vs secondary comparison (tab 1): paired bars per measure, average per province */
+.cmpviz{margin-top:6px}
+.cv-lg{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;font-size:.86rem;margin-bottom:8px}
+.cv-lg i{display:inline-block;width:14px;height:14px;border-radius:4px;margin-right:6px;vertical-align:-2px}
+.cv-lg i.m,.cv-r .b i.m{background:var(--main)}.cv-lg i.s,.cv-r .b i.s{background:var(--second)}
+.cv-lg em{margin-left:auto;color:var(--muted);font-size:.8rem}
+.cv-r{display:grid;grid-template-columns:104px 1fr 112px;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--line)}
+.cv-r.strong{background:linear-gradient(90deg,#f8fafc,transparent);border-radius:8px}
+.cv-r .lb{font-size:.88rem;font-weight:600;line-height:1.25}.cv-r .lb .g{display:block;font-size:.7rem;color:var(--muted);font-weight:700;letter-spacing:.02em}
+.cv-r .b{position:relative;height:20px;margin:2px 0;background:#f1f5f9;border-radius:6px;overflow:hidden}
+.cv-r .b i{display:block;height:100%;border-radius:6px}
+.cv-r .b span{position:absolute;left:8px;top:0;line-height:20px;font-size:.76rem;font-weight:700;color:#0f172a;text-shadow:0 0 3px #fff,0 0 3px #fff}
+.cv-r .chip{font-size:.78rem;text-align:center;padding:5px 6px;border-radius:10px;line-height:1.3}
+.cv-r .chip.m{background:#e8f0ff;color:#1a3f9e}.cv-r .chip.s{background:#fff0d1;color:#9a5200}
+.cv-r .chip b{font-size:1rem}
+@media(max-width:700px){.cv-r{grid-template-columns:1fr}.cv-r .chip{text-align:left}}
+
+/* main vs secondary cards (tab 1): 2 x 2, Thai / foreign split underneath each */
+.cmp4{grid-template-columns:repeat(2,minmax(0,1fr))!important;margin-top:8px}
+.cmp4 .kpi .v{font-size:1.5rem}
+.cmp4 .kpi .n{font-size:.78rem;line-height:1.4}
+.cmp4 .spl{margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,.35);display:grid;gap:2px}
+.cmp4 .sp{display:block}
+.cmp4 .sp b{font-weight:800}
+.cmp4 .d{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;border:1.5px solid #fff}
+.cmp4 .d.th{background:#34d399}.cmp4 .d.fo{background:#f9a8d4}
+@media(max-width:560px){.cmp4{grid-template-columns:1fr!important}}
+
+/* tab 1: main vs secondary - two stacked-bar charts side by side (visitors on light blue, income on light pink) */
+.cmp-pair{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px}
+.cmpbox{border-radius:14px;padding:6px 8px 2px}
+.cmpbox.vis{background:#e8f2ff}
+.cmpbox.inc{background:#fde8f1}
+.cmpchart{height:380px}
+@media(max-width:760px){.cmp-pair{grid-template-columns:1fr}}
