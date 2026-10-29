@@ -177,8 +177,8 @@ a{color:var(--teal-d)}
 .rk-chip small{display:block;font-size:.72rem;color:var(--muted)}
 
 #ov-profile{scroll-margin-top:70px}
-#ov-profile.prof-wait{opacity:0;transform:translateY(24px)}
-#ov-profile.pop{animation:profIn .7s cubic-bezier(.2,.8,.2,1) both}
+#ov-profile.prof-wait,#ov-season-card.prof-wait{opacity:0;transform:translateY(24px)}
+#ov-profile.pop,#ov-season-card.pop{animation:profIn .7s cubic-bezier(.2,.8,.2,1) both}
 @keyframes profIn{from{opacity:0;transform:translateY(24px) scale(.98)}to{opacity:1;transform:none}}
 .plane{position:fixed;left:0;top:150px;z-index:80;pointer-events:none;animation:fly 1.6s cubic-bezier(.35,.1,.45,1) forwards;filter:drop-shadow(0 6px 6px rgba(0,0,0,.25))}
 @keyframes fly{
@@ -186,7 +186,7 @@ a{color:var(--teal-d)}
   12%{opacity:1}
   50%{transform:translate(48vw,-14px) rotate(2deg)}
   100%{transform:translate(112vw,-60px) rotate(-8deg);opacity:1}}
-@media (prefers-reduced-motion:reduce){.plane{display:none}#ov-profile.prof-wait{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.plane{display:none}#ov-profile.prof-wait,#ov-season-card.prof-wait{opacity:1;transform:none}}
 
 .mappick{margin-top:8px;font-size:.88rem;color:var(--muted)}
 
@@ -300,16 +300,8 @@ body.cover-on{overflow:hidden}
 .cv-stat span{font-size:.78rem;opacity:.92;text-shadow:0 2px 8px rgba(0,0,0,.6)}
 .cv-btn2{display:block;margin:12px auto 0;background:rgba(255,255,255,.16);color:#fff;border:1.5px solid rgba(255,255,255,.7);border-radius:999px;padding:9px 24px;font-size:.95rem;cursor:pointer;backdrop-filter:blur(4px);transition:background .2s}
 .cv-btn2:hover{background:rgba(255,255,255,.32)}
-.cv-mascot{position:absolute;z-index:3;right:max(8px,3vw);bottom:30px;width:min(230px,26vw);pointer-events:none;animation:cvIn 1s .6s both cubic-bezier(.2,.9,.3,1.1)}
-.cv-mascot svg{display:block;width:100%;height:auto;filter:drop-shadow(0 8px 12px rgba(0,0,0,.4))}
-.cv-mascot .wave-arm{transform-box:view-box;transform-origin:312px 350px;animation:wave 1.1s ease-in-out infinite}
-.cv-mascot .mascot-eyes{transform-box:fill-box;transform-origin:50% 55%;animation:mBlink 5s infinite}
-.cv-say{position:absolute;right:-4px;top:-92px;width:min(220px,40vw);background:#fff;color:#0f3f44;font-size:.82rem;font-weight:600;line-height:1.4;padding:10px 12px;border-radius:14px;box-shadow:0 8px 22px rgba(0,0,0,.3);text-align:left}
-.cv-say:after{content:"";position:absolute;right:46px;bottom:-9px;border:9px solid transparent;border-top-color:#fff;border-bottom:0}
 @keyframes wave{0%,100%{transform:rotate(128deg)}50%{transform:rotate(158deg)}}}
 @keyframes cvIn{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
-@media(max-width:760px){.cv-mascot{width:120px;bottom:44px}.cv-say{display:none}}
-@media (prefers-reduced-motion:reduce){.cv-mascot{animation:none}.cv-mascot .wave-arm{animation:none}}
 
 /* ---------- story mode (slides) ---------- */
 .side-story{margin-top:10px;background:linear-gradient(135deg,#0d9488,#14b8a6)!important;color:#fff!important;font-weight:700!important;box-shadow:0 4px 12px rgba(13,148,136,.35)}
@@ -356,7 +348,6 @@ body.story-on #mascot{display:none}
 
 /* ---------- new character: waving + sign tweaks ---------- */
 .mascot-svg{overflow:visible}
-.cv-mascot .mascot-svg,.mascot-btn .mascot-svg{filter:drop-shadow(0 6px 8px rgba(0,0,0,.25))}
 .mascot-eyes{transform-box:fill-box;transform-origin:50% 50%}
 .mascot-btn .mascot-svg{width:100%}
 .mascot-btn{width:250px}
@@ -373,3 +364,13 @@ body.story-on #mascot{display:none}
 .mascot-btn,.mascot-btn:hover{width:128px;transform:none}
 .mascot-hint{top:-14px;left:-34px}
 @media(max-width:860px){#mascot{bottom:56px;right:4px;transform:translateY(30%)}.mascot-btn,.mascot-btn:hover{width:92px}}
+
+/* map tab: obvious "click a province" banner above the map */
+.mappick{margin:6px 0 10px}
+.mappick.need{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:14px;background:linear-gradient(135deg,#fff7e0,#ffe9b8);border:2px solid #f59e0b;color:#7c4a03;font-size:1.05rem;box-shadow:0 4px 14px rgba(245,158,11,.25);animation:pickPulse 2.2s ease-in-out infinite}
+.mappick.need b{display:block;font-size:1.12rem;color:#92400e}
+.mappick.need small{display:block;font-size:.82rem;color:#92652a;margin-top:2px}
+.mappick .pin{font-size:1.9rem;line-height:1;animation:pickBounce 1.2s ease-in-out infinite}
+@keyframes pickPulse{0%,100%{box-shadow:0 4px 14px rgba(245,158,11,.25)}50%{box-shadow:0 4px 22px rgba(245,158,11,.55)}}
+@keyframes pickBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@media (prefers-reduced-motion:reduce){.mappick.need,.mappick .pin{animation:none}}

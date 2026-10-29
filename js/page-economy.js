@@ -134,10 +134,17 @@
     const gapDown = pts.filter((p) => p.rg - p.rx >= 10).sort((a, b) => (b.rg - b.rx) - (a.rg - a.rx)).slice(0, 3);   // visitor rank much better than GPP rank
     const gl = (arr, a1, a2) => arr.map((p) => `<b>${TD.esc(p.name)}</b> (นักท่องเที่ยวอันดับ ${p.rx} → ${a1} อันดับ ${a2(p)})`).join("; ");
     const strong = Math.abs(rhoG) >= 0.4;
+    const selP = pts.find((p) => p.i === selI);
+    const provLi = selI < 0 ? "" : !selP ? `<li><b>${TD.esc(TD.P[selI].th)}:</b> ไม่มีข้อมูลเพียงพอสำหรับแสดงในกราฟนี้ตามตัวกรองปัจจุบัน</li>` : (() => {
+      const rpc = 1 + pts.filter((p) => p.pc > selP.pc).length;
+      const medG = TD.stats.median(pts.map((p) => p.gpp)), medP = TD.stats.median(pts.map((p) => p.pc));
+      return `<li><b>${TD.esc(selP.name)} (${selP.city}):</b> นักท่องเที่ยวอันดับ ${selP.rx} · GPP ${TD.f.int(selP.gpp)} ล้านบาท อันดับ ${selP.rg} จาก ${pts.length} ${selP.gpp >= medG ? "สูงกว่า" : "ต่ำกว่า"}ค่ามัธยฐาน · GPP ต่อหัว ${TD.f.int(selP.pc)} บาท/คน/ปี อันดับ ${rpc} ${selP.pc >= medP ? "สูงกว่า" : "ต่ำกว่า"}ค่ามัธยฐาน (${TD.f.int(medP)}) · อยู่ในกลุ่ม “${QN[selP.q]}” ${Math.abs(selP.rx - selP.rg) >= 10 ? `· อันดับ GPP ${selP.rg < selP.rx ? "ดีกว่า" : "ต่ำกว่า"}อันดับนักท่องเที่ยวมาก (ห่าง ${Math.abs(selP.rx - selP.rg)} อันดับ) — ข้อมูลนี้บอกสาเหตุไม่ได้` : ""}</li>`;
+    })();
     $("eco-findings").innerHTML = `<h3>สรุป ${TD.badge.insight}</h3><ul>
       <li><b>นักท่องเที่ยวมากไม่ได้แปลว่าเศรษฐกิจใหญ่เสมอไป:</b> ลำดับนักท่องเที่ยว${typeLbl}สัมพันธ์กับลำดับ GPP ในระดับ${TD.strength(rhoG)} (Spearman ρ = ${TD.f.r(rhoG)}, ${pts.length} จังหวัด) ${strong ? "คือจังหวัดที่คนไปมากมักมี GPP สูงกว่า แต่ยังมีข้อยกเว้นชัดเจนด้านล่าง" : "จึงใช้จำนวนนักท่องเที่ยวทำนาย GPP ได้ไม่ดี"} ส่วนกับ GPP ต่อหัวสัมพันธ์น้อยกว่า (ρ = ${TD.f.r(rhoPc)}) แปลว่าคนไปมากไม่ได้ทำให้ผลผลิตเฉลี่ยต่อคนของคนในจังหวัดสูงตาม</li>
       ${gapUp.length ? `<li><b>GPP สูงกว่าที่จำนวนนักท่องเที่ยวบอก:</b> ${gl(gapUp, "GPP", (p) => p.rg)} — เศรษฐกิจกลุ่มนี้น่าจะพึ่งพาภาคอื่น (เช่น อุตสาหกรรม) มากกว่าการท่องเที่ยว แต่ข้อมูลไม่แยก GPP รายสาขา จึงยืนยันไม่ได้</li>` : ""}
       ${gapDown.length ? `<li><b>นักท่องเที่ยวมากแต่ GPP ต่ำกว่าที่คาด:</b> ${gl(gapDown, "GPP", (p) => p.rg)} — การท่องเที่ยวอาจไม่ได้ช่วยยกขนาดเศรษฐกิจ หรือเป็นการเดินทางเที่ยวระยะสั้นที่ใช้จ่ายน้อย (สมมติฐาน ไม่ใช่ข้อสรุป)</li>` : ""}
+      ${provLi}
       <li><b>ข้อควรระวัง:</b> เป็นความสัมพันธ์เชิงสถิติ ณ ปีเดียว ไม่พิสูจน์ว่าการท่องเที่ยวทำให้ GPP สูงขึ้นหรือในทางกลับกัน</li></ul>`;
 
     $("eco-limits").innerHTML = `<h3>ข้อจำกัดของการใช้ GPP วัดความเข้มแข็งทางเศรษฐกิจ</h3><ul>

@@ -196,6 +196,16 @@
         const sel = S.cmp.map((cd) => pts.find((q) => q.p.code === cd)).filter(Boolean).map((q) => ({ q, per: q.vis / q.rooms })).sort((a, b) => b.per - a.per);
         if (sel.length >= 2) li.push(`<li><b>จังหวัดที่เลือกเปรียบเทียบ:</b> ${TD.esc(sel[0].q.p.th)} มีนักท่องเที่ยวต่อห้องสูงสุด (${TD.f.int(sel[0].per)} คน/ห้อง) ส่วน${TD.esc(sel[sel.length - 1].q.p.th)}ต่ำสุด (${TD.f.int(sel[sel.length - 1].per)} คน/ห้อง) — ต่างกัน ${TD.f.dec(sel[0].per / sel[sel.length - 1].per, 1)} เท่า</li>`);
       }
+      const pSel = f.prov !== "all" && TD.byCode[+f.prov] ? TD.byCode[+f.prov] : null;
+      if (pSel) {
+        const q = pts.find((o) => o.p.code === pSel.code);
+        if (!q) li.push(`<li><b>${TD.esc(pSel.th)}:</b> ไม่มีข้อมูลที่พัก/นักท่องเที่ยวเพียงพอสำหรับจังหวัดนี้ตามตัวกรองปัจจุบัน</li>`);
+        else {
+          const rvS = 1 + pts.filter((o) => o.vis > q.vis).length, rrS = 1 + pts.filter((o) => o.rooms > q.rooms).length;
+          const perAll = TD.stats.sum(pts.map((o) => o.vis)) / TD.stats.sum(pts.map((o) => o.rooms)), per = q.vis / q.rooms;
+          li.push(`<li><b>${TD.esc(pSel.th)} (${pSel.cityType}):</b> ห้องพัก ${TD.f.int(q.rooms)} ห้อง (อันดับ ${rrS} จาก ${pts.length}) · นักท่องเที่ยวอันดับ ${rvS} · ${TD.f.int(per)} คน/ห้อง ${per >= perAll ? "สูงกว่า" : "ต่ำกว่า"}ค่ารวมของกลุ่ม (${TD.f.int(perAll)} คน/ห้อง) ${TD.f.dec(Math.max(per, perAll) / Math.min(per, perAll), 1)} เท่า · สัดส่วนต่อนักท่องเที่ยวทั้งประเทศ ${TD.f.pct((q.vis / vAll) * 100, 1)} — ห้องพักเป็นภาพรวมปัจจุบัน ไม่ใช่รายปี</li>`);
+        }
+      }
       li.push(`<li><b>ข้อควรระวัง:</b> ห้องพักเป็นภาพรวมปัจจุบันจากฐานข้อมูล ททท. (ไม่ใช่รายปีและไม่ใช่สำมะโน) เทียบกับนักท่องเที่ยวปี ${y} จึงเป็นการเปรียบเทียบคร่าว ๆ</li>`);
       el.innerHTML = `<h3>สรุป ${TD.badge.insight}</h3><ul>${li.join("")}</ul>`;
     })();

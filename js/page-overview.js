@@ -7,7 +7,7 @@
     main: ["#dbe8ff", "#b3cdfc", "#85aef8", "#5589ef", "#2f63d8", "#1a3f9e"],
     sec: ["#fff0d1", "#fddb9b", "#fbc064", "#f3a22b", "#d97f06", "#9a5200"],
   };
-  const S = { metric: "income", trend: "visitors", top: "income", fixed: false, timer: null, profFor: null };
+  const S = { metric: "income", trend: "visitors", season: "visitors", top: "income", fixed: false, timer: null, profFor: null };
   const METRIC = {
     visitors: { t: "นักท่องเที่ยว", unit: "คน", get: (a, f) => TD.val(a, f.type), fmt: (v) => TD.f.people(v) + "คน" },
     income: { t: "รายได้รวม", unit: "ล้านบาท", get: (a, f) => TD.inc(a, f.type), fmt: (v) => TD.f.int(v) + " ล้านบาท" },
@@ -40,6 +40,7 @@
     $("ov-play").addEventListener("click", () => (S.timer ? (stopPlay(), TD.render()) : startPlay()));
     TD.$$("#ov-metric button").forEach((b) => b.addEventListener("click", () => { S.metric = b.dataset.v; TD.$$("#ov-metric button").forEach((x) => x.classList.toggle("on", x === b)); render(); }));
     TD.$$("#ov-top-metric button").forEach((b) => b.addEventListener("click", () => { S.top = b.dataset.v; TD.$$("#ov-top-metric button").forEach((x) => x.classList.toggle("on", x === b)); render(); }));
+    TD.$$("#ov-season-metric button").forEach((b) => b.addEventListener("click", () => { S.season = b.dataset.v; TD.$$("#ov-season-metric button").forEach((x) => x.classList.toggle("on", x === b)); TD.render(); }));
     TD.$$("#ov-trend-metric button").forEach((b) => b.addEventListener("click", () => { S.trend = b.dataset.v; TD.$$("#ov-trend-metric button").forEach((x) => x.classList.toggle("on", x === b)); render(); }));
   }
 
@@ -177,10 +178,11 @@
   function renderProfile(A, y, f) {
     const card = $("ov-profile");
     const p = f.prov !== "all" ? TD.byCode[+f.prov] : null;
-    if (!p || !A[p.idx]) { card.hidden = true; card.classList.remove("pop", "prof-wait"); S.profFor = null; return; }
+    const sc = $("ov-season-card");
+    if (!p || !A[p.idx]) { card.hidden = true; sc.hidden = true; [card, sc].forEach((c) => c.classList.remove("pop", "prof-wait")); S.profFor = null; return; }
     const isNew = S.profFor !== p.code;                   // first time for this province -> play the airplane intro
     S.profFor = p.code;
-    card.hidden = false;
+    card.hidden = false; sc.hidden = false;
     const all = TD.P.filter((q) => A[q.idx]);
     const rank = (fn) => { const v = fn(p); if (!Number.isFinite(v)) return "–"; return 1 + all.filter((q) => fn(q) > v).length; };
     const a = A[p.idx];
@@ -215,12 +217,13 @@
       { type: "scatter", mode: "lines", stackgroup: "v", name: "ชาวต่างชาติ", x: keys, y: keys.map((k) => (k in fo ? fo[k] : null)), line: { color: c.foreign, width: 1 }, fillcolor: "rgba(236,72,153,.55)", hovertemplate: "%{x}<br>ชาวต่างชาติ %{y:,.0f} คน<extra></extra>" },
     ], { yaxis: { title: "นักท่องเที่ยวรายเดือน (คน)", tickformat: ",.2s" }, xaxis: { title: "เดือน (ม.ค. 2015 – ก.ค. 2023; เดือนที่ไม่มีข้อมูลปล่อยว่าง)", nticks: 12 }, legend: { orientation: "h", y: -0.3 }, margin: { l: 70, r: 10, t: 10, b: 80 } });
     if (isNew) flyIn(card);
-    else card.classList.remove("prof-wait");
+    else [card, sc].forEach((c) => c.classList.remove("prof-wait"));
   }
 
   /* ---- airplane intro: ONE plane flies across the screen, then the profile pops in ---- */
   TD.planeSVG = '<svg class="planesvg" viewBox="0 0 310 162" width="190" height="99" aria-hidden="true"><defs><linearGradient id="pgFus" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#eef2f5"/><stop offset="1" stop-color="#c3ccd4"/></linearGradient><linearGradient id="pgWingU" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f4f7f9"/><stop offset="1" stop-color="#aab6c0"/></linearGradient><linearGradient id="pgWingL" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#f4f7f9"/><stop offset="1" stop-color="#aab6c0"/></linearGradient><linearGradient id="pgEng" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8d98a3"/><stop offset=".5" stop-color="#e9edf0"/><stop offset="1" stop-color="#6f7a85"/></linearGradient></defs><path d="M52,75 L24,38 L12,38 L30,75Z" fill="url(#pgWingU)" stroke="#8795a1" stroke-width=".7"/><path d="M52,85 L24,122 L12,122 L30,85Z" fill="url(#pgWingL)" stroke="#8795a1" stroke-width=".7"/><path d="M184,73 L132,6 L112,6 L138,73Z" fill="url(#pgWingU)" stroke="#8795a1" stroke-width=".8"/><path d="M184,87 L132,154 L112,154 L138,87Z" fill="url(#pgWingL)" stroke="#8795a1" stroke-width=".8"/><path d="M150,70 L121,10 M150,90 L121,150" stroke="#9aa7b2" stroke-width=".6" fill="none"/><g><ellipse cx="164" cy="39" rx="17" ry="6.2" fill="url(#pgEng)" stroke="#5f6b76" stroke-width=".8"/><ellipse cx="179" cy="39" rx="3" ry="5" fill="#2b323a"/></g><g><ellipse cx="164" cy="121" rx="17" ry="6.2" fill="url(#pgEng)" stroke="#5f6b76" stroke-width=".8"/><ellipse cx="179" cy="121" rx="3" ry="5" fill="#2b323a"/></g><path d="M8,80 Q16,72 46,71.5 L246,71.5 Q288,73 302,80 Q288,87 246,88.5 L46,88.5 Q16,88 8,80Z" fill="url(#pgFus)" stroke="#7d8a96" stroke-width=".8"/><path d="M60,80 L262,80" stroke="#0d9488" stroke-width="3.2" stroke-linecap="round"/><path d="M12,80 L50,80" stroke="#0d9488" stroke-width="2.4" stroke-linecap="round" opacity=".9"/><g fill="#56626d"><circle cx="78" cy="75.6" r="1.25"/><circle cx="78" cy="84.4" r="1.25"/><circle cx="85" cy="75.6" r="1.25"/><circle cx="85" cy="84.4" r="1.25"/><circle cx="92" cy="75.6" r="1.25"/><circle cx="92" cy="84.4" r="1.25"/><circle cx="99" cy="75.6" r="1.25"/><circle cx="99" cy="84.4" r="1.25"/><circle cx="106" cy="75.6" r="1.25"/><circle cx="106" cy="84.4" r="1.25"/><circle cx="113" cy="75.6" r="1.25"/><circle cx="113" cy="84.4" r="1.25"/><circle cx="120" cy="75.6" r="1.25"/><circle cx="120" cy="84.4" r="1.25"/><circle cx="127" cy="75.6" r="1.25"/><circle cx="127" cy="84.4" r="1.25"/><circle cx="134" cy="75.6" r="1.25"/><circle cx="134" cy="84.4" r="1.25"/><circle cx="141" cy="75.6" r="1.25"/><circle cx="141" cy="84.4" r="1.25"/><circle cx="148" cy="75.6" r="1.25"/><circle cx="148" cy="84.4" r="1.25"/><circle cx="155" cy="75.6" r="1.25"/><circle cx="155" cy="84.4" r="1.25"/><circle cx="162" cy="75.6" r="1.25"/><circle cx="162" cy="84.4" r="1.25"/><circle cx="169" cy="75.6" r="1.25"/><circle cx="169" cy="84.4" r="1.25"/><circle cx="176" cy="75.6" r="1.25"/><circle cx="176" cy="84.4" r="1.25"/><circle cx="183" cy="75.6" r="1.25"/><circle cx="183" cy="84.4" r="1.25"/><circle cx="190" cy="75.6" r="1.25"/><circle cx="190" cy="84.4" r="1.25"/><circle cx="197" cy="75.6" r="1.25"/><circle cx="197" cy="84.4" r="1.25"/><circle cx="204" cy="75.6" r="1.25"/><circle cx="204" cy="84.4" r="1.25"/><circle cx="211" cy="75.6" r="1.25"/><circle cx="211" cy="84.4" r="1.25"/><circle cx="218" cy="75.6" r="1.25"/><circle cx="218" cy="84.4" r="1.25"/><circle cx="225" cy="75.6" r="1.25"/><circle cx="225" cy="84.4" r="1.25"/><circle cx="232" cy="75.6" r="1.25"/><circle cx="232" cy="84.4" r="1.25"/><circle cx="239" cy="75.6" r="1.25"/><circle cx="239" cy="84.4" r="1.25"/><circle cx="246" cy="75.6" r="1.25"/><circle cx="246" cy="84.4" r="1.25"/></g><path d="M270,76.5 L284,80 L270,83.5 Z" fill="#26323d"/><path d="M270,77.2 L279,79.6" stroke="#6b8196" stroke-width=".8"/></svg>';
-  function flyIn(card) {
+  function flyIn(profile) {
+    const card = { classList: { add: (c) => [profile, $("ov-season-card")].forEach((n) => n.classList.add(c)), remove: (...c) => [profile, $("ov-season-card")].forEach((n) => n.classList.remove(...c)) }, scrollIntoView: (o) => profile.scrollIntoView(o) };   // the season chart appears together with the profile
     const still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     card.classList.remove("pop");
     document.querySelectorAll(".plane").forEach((n) => n.remove());          // never more than one plane on screen
@@ -237,6 +240,44 @@
       S.flyT2 = setTimeout(() => { card.classList.remove("prof-wait"); card.classList.add("pop"); }, 750);
       S.flyT3 = setTimeout(() => plane.remove(), 2000);
     }, 380);
+  }
+
+  /* ---- seasonality: each month's share of the year's total (needs all 12 months, so only complete provinces/years are used) ---- */
+  const SEASON_BASE = [2015, 2016, 2017, 2018, 2019];       // years before COVID-19 with all 12 months for every province
+  function seasonShares(set, year, metric, type) {
+    const full = new Set([...set].filter((i) => TD.isComplete(year, i)));
+    if (!full.size) return null;
+    const m = new Array(12).fill(0);
+    (TD.rowsByYear[year] || []).forEach((r) => {
+      if (!full.has(r[0])) return;
+      const th = metric === "income" ? r[5] || 0 : r[3], fo = metric === "income" ? r[6] || 0 : r[4];
+      m[r[2] - 1] += type === "thai" ? th : type === "foreign" ? fo : th + fo;
+    });
+    const tot = TD.stats.sum(m);
+    return tot > 0 ? { pct: m.map((v) => (v / tot) * 100), n: full.size } : null;
+  }
+  function seasonStats(set, f, metric) {
+    const ser = SEASON_BASE.map((yy) => seasonShares(set, yy, metric, f.type)).filter(Boolean);
+    if (ser.length < 3) return null;
+    const avg = Array.from({ length: 12 }, (_, k) => TD.stats.mean(ser.map((o) => o.pct[k])));
+    const hi = avg.indexOf(Math.max(...avg)), lo = avg.indexOf(Math.min(...avg));
+    const top3 = avg.map((v, k) => ({ v, k })).sort((a, b) => b.v - a.v).slice(0, 3).map((o) => o.k).sort((a, b) => a - b);
+    return { ser, avg, hi, lo, top3, n: Math.min(...ser.map((o) => o.n)) };
+  }
+  function renderSeason(chosen, f, y) {
+    const metric = S.season, mt = metric === "income" ? "รายได้" : "นักท่องเที่ยว";
+    const st = seasonStats(chosen, f, metric);
+    if (!st) { TD.emptyChart("ov-season", "ไม่มีข้อมูลเพียงพอ"); $("ov-season-desc").textContent = ""; $("ov-season-src").innerHTML = ""; return; }
+    const M = TD.MONTHS_TH, c = TD.colors();
+    const tr = [];
+    SEASON_BASE.forEach((yy, k) => { const o = seasonShares(chosen, yy, metric, f.type); if (o) tr.push({ type: "scatter", mode: "lines", name: String(yy), x: M, y: o.pct, line: { color: "#cbd5e1", width: 1.5 }, showlegend: false, hovertemplate: yy + " %{x}: %{y:.1f}%<extra></extra>" }); });
+    tr.push({ type: "scatter", mode: "lines+markers", name: "ค่าเฉลี่ย 2015–2019", x: M, y: st.avg, line: { color: c.main, width: 4 }, marker: { size: 8 }, hovertemplate: "ค่าเฉลี่ย 2015–2019 %{x}: %{y:.1f}% ของทั้งปี<extra></extra>" });
+    const cur = y >= 2020 ? seasonShares(chosen, y, metric, f.type) : null;
+    if (cur) tr.push({ type: "scatter", mode: "lines+markers", name: "ปี " + y, x: M, y: cur.pct, line: { color: c.second, width: 3, dash: "dash" }, marker: { size: 7, symbol: "diamond" }, hovertemplate: "ปี " + y + " %{x}: %{y:.1f}% ของทั้งปี<extra></extra>" });
+    TD.plot("ov-season", tr, { yaxis: { title: `สัดส่วน${mt}ของทั้งปี (%)`, rangemode: "tozero", ticksuffix: "%" }, xaxis: { title: "เดือน" }, legend: { orientation: "h", y: -0.25 }, margin: { l: 60, r: 10, t: 10, b: 80 } });
+    const sel = f.prov !== "all" && TD.byCode[+f.prov] ? TD.byCode[+f.prov].th : null;
+    $("ov-season-desc").innerHTML = `${sel ? TD.esc(sel) : "จังหวัดที่เลือก (" + st.n + " จังหวัดที่มีข้อมูลครบทุกเดือน)"} · เส้นเทา = แต่ละปี 2015–2019 · เส้นหนา = ค่าเฉลี่ย · ${cur ? `เส้นประ = ปี ${y}` : y >= 2020 ? `ปี ${y} ไม่แสดง เพราะข้อมูลไม่ครบ 12 เดือน` : "ปีก่อนโควิด-19 ทั้งหมด"} · <b>เดือนที่${mt}สูงสุด: ${M[st.hi]} (${TD.f.pct(st.avg[st.hi], 1)} ของทั้งปี)</b> ต่ำสุด: ${M[st.lo]} (${TD.f.pct(st.avg[st.lo], 1)}) ${TD.badge.calc}`;
+    $("ov-season-src").innerHTML = TD.SRC.tour() + "<br>สัดส่วน = ยอดของเดือน ÷ ยอดรวมทั้งปี ใช้เฉพาะปีและจังหวัดที่มีข้อมูลครบ 12 เดือน (ไม่เติมค่าที่ขาด) · 2021 และ 2023 ไม่ครบเดือน จึงไม่นำมาคำนวณ · เป็นการบรรยายรูปแบบรายเดือน ไม่ได้ระบุสาเหตุ (เช่น ปิดเทอม เทศกาล สภาพอากาศ)";
   }
 
   /* ---- recovery versus 2019 (same months in both years) ---- */
@@ -292,9 +333,12 @@
       <span class="ttl">อื่น ๆ</span><div class="ramp"><span><i style="background:#d9dee0"></i>ไม่มีข้อมูล / นอกตัวกรอง</span><span>หน่วย: ${M.unit}</span></div>`;
     TD.setSrc("ov-map-src", "tour", "geo");
     renderProfile(A, y, f);
+    if (f.prov !== "all" && TD.byCode[+f.prov] && A[TD.byCode[+f.prov].idx]) renderSeason(TD.provSet(), f, y);
     mapFindings(rows, A, f, M, y);
     const sel = f.prov !== "all" ? TD.byCode[+f.prov] : null;
-    $("ov-map-pick").innerHTML = sel ? `จังหวัดที่เลือก: <b>${TD.esc(sel.th)}</b> ${chip(sel)} · โปรไฟล์จังหวัดอยู่ใต้แผนที่ (เลือก “ทุกจังหวัด” ที่ตัวกรองเพื่อปิด)` : "คลิกจังหวัดบนแผนที่ แล้วโปรไฟล์จังหวัดจะปรากฏใต้แผนที่พร้อมเครื่องบินบินผ่าน ✈";
+    const pk = $("ov-map-pick");
+    pk.classList.toggle("need", !sel);
+    pk.innerHTML = sel ? `จังหวัดที่เลือก: <b>${TD.esc(sel.th)}</b> ${chip(sel)} · โปรไฟล์และกราฟฤดูกาลของจังหวัดอยู่ใต้แผนที่ (เลือก “ทุกจังหวัด” ที่ตัวกรองเพื่อปิด)` : `<span class="pin" aria-hidden="true">👆</span><span><b>คลิกที่จังหวัดบนแผนที่เพื่อดูรายละเอียด</b><small>โปรไฟล์จังหวัด อันดับ และกราฟฤดูกาลรายเดือนจะปรากฏใต้แผนที่ ✈</small></span>`;
   }
 
 
@@ -309,10 +353,35 @@
     const mainI = set.filter((i) => TD.P[i].cityType === "เมืองหลัก"), secI = set.filter((i) => TD.P[i].cityType === "เมืองรอง");
     return { months, all: pct(set, "total"), thai: pct(set, "thai"), foreign: pct(set, "foreign"), main: mainI.length ? pct(mainI, "total") : null, sec: secI.length ? pct(secI, "total") : null };
   }
+  /* summary line for the province picked in the filter: rank, share, spending per head, foreign share and recovery - all computed from the same filtered rows */
+  function provinceFinding(rows, A, f, y, base) {
+    const sel = f.prov !== "all" ? TD.byCode[+f.prov] : null;
+    if (!sel) return "";
+    const a = A[sel.idx];
+    if (!a) return `<li><b>${TD.esc(sel.th)}:</b> ไม่มีข้อมูลเพียงพอในปี ${y} ตามตัวกรองนี้</li>`;
+    if (!rows.includes(sel.idx)) return `<li><b>${TD.esc(sel.th)}:</b> ไม่อยู่ในกลุ่มจังหวัดตามตัวกรองประเภท/ภูมิภาคที่เลือก จึงไม่นำมาจัดอันดับ</li>`;
+    const sum = (g) => TD.stats.sum(rows.map((i) => g(A[i])));
+    const V = TD.val(a, f.type), I = TD.inc(a, f.type);
+    const rv = 1 + rows.filter((i) => TD.val(A[i], f.type) > V).length, ri = 1 + rows.filter((i) => TD.inc(A[i], f.type) > I).length;
+    const allV = sum((x) => TD.val(x, f.type)), allI = sum((x) => TD.inc(x, f.type));
+    const own = (I / V) * 1e6, avg = (allI / allV) * 1e6;
+    const fsh = a.thaiInc + a.forInc > 0 ? (a.forInc / (a.thaiInc + a.forInc)) * 100 : null;
+    const natF = (sum((x) => x.forInc) / (sum((x) => x.forInc) + sum((x) => x.thaiInc))) * 100;
+    let t = `<li><b>${TD.esc(sel.th)} (${sel.cityType}):</b> นักท่องเที่ยวอันดับ ${rv} จาก ${rows.length} (${TD.f.pct((V / allV) * 100, 1)} ของจังหวัดที่เลือก) · รายได้อันดับ ${ri} (${TD.f.pct((I / allI) * 100, 1)})`;
+    if (V > 0 && Number.isFinite(own)) t += ` · รายได้ต่อคน ${TD.f.int(own)} บาท ${own >= avg ? "สูงกว่า" : "ต่ำกว่า"}ค่าเฉลี่ยของกลุ่ม (${TD.f.int(avg)} บาท) ${TD.f.dec(Math.max(own, avg) / Math.min(own, avg), 1)} เท่า`;
+    if (fsh !== null && Number.isFinite(natF)) t += ` · ชาวต่างชาติสร้างรายได้ ${TD.f.pct(fsh, 0)} ของรายได้จังหวัด (ค่ารวมของกลุ่ม ${TD.f.pct(natF, 0)})`;
+    if (rv !== ri) t += ` · อันดับรายได้${ri < rv ? "ดีกว่า" : "ต่ำกว่า"}อันดับจำนวนคน ${Math.abs(rv - ri)} อันดับ`;
+    const cm = TD.D.tourism.commonMonths, mo = (cm["2019"] || []).filter((m) => (cm[String(y)] || []).includes(m));
+    const a0 = mo.length ? TD.agg(2019, mo)[sel.idx] : null, a1 = mo.length ? TD.agg(y, mo)[sel.idx] : null;
+    if (y !== 2019 && a0 && a1 && a0.total > 0) t += ` · นักท่องเที่ยวเทียบปี 2019 (${TD.monthsLabel(mo)}) อยู่ที่ ${TD.f.pct((a1.total / a0.total) * 100, 0)}`;
+    return t + `</li>`;
+  }
   function renderFindings(rows, A, f, y, base) {
     const el = $("ov-findings");
-    if (rows.length < 8) { el.innerHTML = `<h3>สรุป ${TD.badge.na}</h3><p>จังหวัดตามตัวกรองมีน้อยเกินไป (${rows.length} จังหวัด) จึงไม่สรุป</p>`; return; }
+    const pli = provinceFinding(rows, A, f, y, base);
+    if (rows.length < 8) { el.innerHTML = `<h3>สรุป ${TD.badge.na}</h3>${pli ? `<ul>${pli}</ul>` : ""}<p>จังหวัดตามตัวกรองมีน้อยเกินไป (${rows.length} จังหวัด) จึงไม่สรุปภาพรวม</p>`; return; }
     const li = [];
+    if (pli) li.push(pli);
     const sum = (k) => TD.stats.sum(rows.map((i) => A[i][k]));
     const tV = sum("thai"), fV = sum("foreign"), tI = sum("thaiInc"), fI = sum("forInc");
     // 1. spending per head, Thai vs foreign
@@ -385,6 +454,11 @@
       const allI = TD.stats.sum(rows.map((i) => TD.inc(A[i], f.type))), allV = TD.stats.sum(rows.map((i) => TD.val(A[i], f.type)));
       const own = (TD.inc(a, f.type) / TD.val(a, f.type)) * 1e6, avg = (allI / allV) * 1e6;
       li.push(`<li><b>${TD.esc(sel.th)}:</b> ${M.t}อันดับ ${k + 1} จาก ${vals.length} (${TD.f.pct((vals[k].v / tot) * 100, 1)} ของทั้งหมด) · รายได้ต่อนักท่องเที่ยว ${TD.f.int(own)} บาท ${own >= avg ? "สูงกว่า" : "ต่ำกว่า"}ค่าเฉลี่ยของจังหวัดที่เลือก (${TD.f.int(avg)} บาท) ${TD.f.dec(Math.max(own, avg) / Math.min(own, avg), 1)} เท่า</li>`);
+    }
+    const sst = seasonStats(TD.provSet(), f, "visitors");
+    if (sst) {
+      const MT = TD.MONTHS_TH, who = f.prov !== "all" && TD.byCode[+f.prov] ? TD.esc(TD.byCode[+f.prov].th) : "จังหวัดที่เลือก";
+      li.push(`<li><b>ฤดูกาล${f.prov !== "all" ? ": " + who : ""}:</b> ช่วงปี 2015–2019 (ก่อนโควิด-19) ${sst.top3.map((k) => MT[k]).join(", ")} เป็น 3 เดือนที่นักท่องเที่ยวมากที่สุด เดือนสูงสุดคือ ${MT[sst.hi]} (${TD.f.pct(sst.avg[sst.hi], 1)} ของทั้งปี) ต่ำสุดคือ ${MT[sst.lo]} (${TD.f.pct(sst.avg[sst.lo], 1)}) — เดือนสูงสุดมากกว่าต่ำสุด ${TD.f.dec(sst.avg[sst.hi] / sst.avg[sst.lo], 1)} เท่า (บอกสาเหตุไม่ได้ว่ามาจากเทศกาล ปิดเทอม หรือสภาพอากาศ)</li>`);
     }
     el.innerHTML = `<h3>สรุป ${TD.badge.insight}</h3><p class="desc" style="margin:2px 0 4px">${M.t} ปี ${y} · ${TD.windowLabel(y)}</p><ul>${li.join("")}</ul>`;
   }

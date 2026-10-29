@@ -26,17 +26,11 @@
     document.getElementById("cv-sub").textContent = `${P.length} จังหวัด · เมืองหลัก ${main} · เมืองรอง ${P.length - main} · ข้อมูลนักท่องเที่ยวและรายได้ ปี 2015–2023`;
   }
 
-  // waving mascot
-  const mh = document.getElementById("cv-mascot");
-  if (mh && window.TD && TD.mascotInstance) mh.insertAdjacentHTML("beforeend", TD.mascotInstance({ wave: true }));
-  const storyBtn = document.getElementById("cv-story");
-
-  function open(thenStory) { cover.classList.add("leaving"); setTimeout(() => { close(); if (thenStory === true && window.TD && TD.startStory) TD.startStory(); }, 850); }
+  function open() { cover.classList.add("leaving"); setTimeout(close, 850); }
   const btn = document.getElementById("cv-open");
-  btn.addEventListener("click", () => open(false));
-  if (storyBtn) storyBtn.addEventListener("click", () => { document.removeEventListener("keydown", onKeyRef); open(true); });
+  btn.addEventListener("click", () => open());
   function onKeyRef(e) {
-    if (cover.isConnected && (e.key === "Enter" || e.key === " " || e.key === "Escape")) { e.preventDefault(); open(false); document.removeEventListener("keydown", onKeyRef); }
+    if (cover.isConnected && (e.key === "Enter" || e.key === " " || e.key === "Escape")) { e.preventDefault(); open(); document.removeEventListener("keydown", onKeyRef); }
   }
   document.addEventListener("keydown", onKeyRef);
   setTimeout(() => btn.focus({ preventScroll: true }), 50);

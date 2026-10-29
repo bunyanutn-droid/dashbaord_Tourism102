@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="vendor/leaflet.css">
-<link rel="stylesheet" href="css/style.css?v=20261027c">
+<link rel="stylesheet" href="css/style.css?v=20261029f">
 </head>
 <body>
 
@@ -22,10 +22,8 @@
     <h1>แดชบอร์ดวิเคราะห์การท่องเที่ยว<br>และเศรษฐกิจรายจังหวัด</h1>
     <p class="cv-sub" id="cv-sub"></p>
     <button id="cv-open" class="cv-btn" type="button">Open Dashboard <span aria-hidden="true">→</span></button>
-    <button id="cv-story" class="cv-btn2" type="button">▶ ให้ตัวละครเล่าเรื่อง</button>
     <p class="cv-hint">กดปุ่ม หรือกด Enter เพื่อเข้าสู่แดชบอร์ด</p>
   </div>
-  <div class="cv-mascot" id="cv-mascot" aria-hidden="true"><div class="cv-say">สวัสดีค่ะ! มาดูกันว่านักท่องเที่ยวไปที่ไหนและได้เงินเท่าไร</div></div>
   <p class="cv-credit">ภาพสถานที่ท่องเที่ยวจาก Wikimedia Commons ตามใบอนุญาตของแต่ละภาพ (ผู้ถ่ายและใบอนุญาตระบุไว้ใน data/images.js)</p>
   <noscript><p style="position:absolute;bottom:20px;left:20px;color:#fff">ต้องเปิด JavaScript เพื่อใช้แดชบอร์ด</p></noscript>
 </div>
@@ -37,7 +35,6 @@
   <button role="tab" data-page="map"><span class="ic" aria-hidden="true">🗺️</span><span class="lb">แผนที่รายจังหวัด</span></button>
   <button role="tab" data-page="economy"><span class="ic" aria-hidden="true">💹</span><span class="lb">การท่องเที่ยวกับเศรษฐกิจ</span></button>
   <button role="tab" data-page="concentration"><span class="ic" aria-hidden="true">🏨</span><span class="lb">ที่พักและการกระจุกตัว</span></button>
-  <button type="button" class="side-story" id="side-story"><span class="ic" aria-hidden="true">🎬</span><span class="lb">โหมดเล่าเรื่อง</span></button>
   <button role="tab" data-page="sources"><span class="ic" aria-hidden="true">📚</span><span class="lb">แหล่งข้อมูลและวิธีวิเคราะห์</span></button>
 </nav>
 <div class="content">
@@ -132,12 +129,19 @@
         </div>
       </div>
       <p class="desc" id="ov-map-desc"></p>
+      <div id="ov-map-pick" class="mappick"></div>
       <div id="ov-map" class="map" role="img" aria-label="แผนที่ประเทศไทยแสดงนักท่องเที่ยวหรือรายได้รายจังหวัด"></div>
       <div id="ov-map-legend" class="legend2"></div>
-      <div id="ov-map-pick" class="mappick"></div>
       <p class="src" id="ov-map-src"></p>
     </article>
     <article class="card c-teal" id="ov-profile" hidden></article>
+    <article class="card c-blue" id="ov-season-card" hidden>
+      <div class="card-head"><h2>ฤดูกาลท่องเที่ยวรายเดือน</h2>
+        <div class="seg" id="ov-season-metric" role="group" aria-label="ตัวชี้วัดฤดูกาล"><button data-v="visitors" class="on">นักท่องเที่ยว</button><button data-v="income">รายได้</button></div></div>
+      <p class="desc" id="ov-season-desc"></p>
+      <div id="ov-season" class="chart sm"></div>
+      <p class="src" id="ov-season-src"></p>
+    </article>
     <article class="card findings" id="map-findings"></article>
   </section>
 
@@ -224,20 +228,19 @@
 
 <script src="vendor/plotly-basic.min.js"></script>
 <script src="vendor/leaflet.js"></script>
-<script src="data/dataset.js?v=20261027c" onerror="window.__dataError='dataset'"></script>
-<script src="data/provinces.geo.js?v=20261027c" onerror="window.__dataError='geo'"></script>
-<script src="data/images.js?v=20261027c" onerror="window.__imgError=true"></script>
-<script src="js/mascot.js?v=20261027c"></script>
-<script src="js/cover.js?v=20261027c"></script>
-<script src="js/format.js?v=20261027c"></script>
-<script src="js/stats.js?v=20261027c"></script>
-<script src="js/model.js?v=20261027c"></script>
-<script src="js/ui.js?v=20261027c"></script>
-<script src="js/page-overview.js?v=20261027c"></script>
-<script src="js/page-economy.js?v=20261027c"></script>
-<script src="js/page-concentration.js?v=20261027c"></script>
-<script src="js/page-sources.js?v=20261027c"></script>
-<script src="js/app.js?v=20261027c"></script>
-<script src="js/story.js?v=20261027c"></script>
+<script src="data/dataset.js?v=20261029f" onerror="window.__dataError='dataset'"></script>
+<script src="data/provinces.geo.js?v=20261029f" onerror="window.__dataError='geo'"></script>
+<script src="data/images.js?v=20261029f" onerror="window.__imgError=true"></script>
+<script src="js/mascot.js?v=20261029f"></script>
+<script src="js/cover.js?v=20261029f"></script>
+<script src="js/format.js?v=20261029f"></script>
+<script src="js/stats.js?v=20261029f"></script>
+<script src="js/model.js?v=20261029f"></script>
+<script src="js/ui.js?v=20261029f"></script>
+<script src="js/page-overview.js?v=20261029f"></script>
+<script src="js/page-economy.js?v=20261029f"></script>
+<script src="js/page-concentration.js?v=20261029f"></script>
+<script src="js/page-sources.js?v=20261029f"></script>
+<script src="js/app.js?v=20261029f"></script>
 </body>
 </html>
